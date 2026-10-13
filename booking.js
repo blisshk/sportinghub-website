@@ -27,8 +27,18 @@
    Front end only. No network calls. Every price inside the booking flow is
    still a placeholder. */
 
-/* ---------- prices: one object, one edit when Suki's rate card lands ---------- */
-const PRICES = { court:null, class:null, pt:null };   /* null renders as HK$ TBC */
+/* ---------- prices: one object, one edit when Suki's rate card lands ----------
+   2026-10-13 (Suki): KPay compliance will not approve online payment for what
+   reads as prepaid packages, so classes and personal training show one
+   session at a dummy price: HK$ 1,000 for an hour of personal training,
+   HK$ 2,000 for one class. Placeholders for the KPay review, not the
+   client's rate card. */
+const PRICES = { court:null, class:2000, pt:1000 };   /* null renders as HK$ TBC */
+/* 2026-10-13: one class per booking. Sport and S&C classes book a single
+   session instead of a term, and certificate courses (several weeks, the
+   prepaid shape KPay refused) leave the online flow. false brings back the
+   round 4 term and certificate model. */
+const ONE_CLASS_PER_BOOKING = true;
 function money(v){
   return v == null
     ? '<span class="price-tbc" data-price="tbc">HK$ TBC</span>'
@@ -59,11 +69,13 @@ const RATES = {
 const RATE_ORDER = ['vb','bb','pb','fb','tq','db','bd'];   /* the rate card's own order */
 const MEMBERSHIP_FEE = 350;   /* one-off, sport class members: account plus training kit (2026-09-25 call) */
 /* "from" prices for the landing page tiles: the lowest off-peak court rate,
-   and TBC where the client's sheet is not readable yet (classes, PT). */
+   and TBC where the client's sheet is not readable yet (classes, PT). The
+   2026-10-13 dummies in PRICES stay inside the booking flow, so the main
+   site and the coming-soon page still say "Prices coming soon". */
 const FROM_PRICES = {
   court: Math.min(...RATE_ORDER.flatMap(id => RATES[id].map(r => r.off))),
-  class: PRICES.class,
-  pt: PRICES.pt,
+  class: null,
+  pt: null,
 };
 
 /* ---------- round 5 (2026-10-04): the booking flow prices courts too ----------
@@ -78,7 +90,7 @@ const FROM_PRICES = {
    differently, so the customer picks the court (2026-09-25 call, Alfred
    2026-10-04); every other sport is assigned whichever court is free.
    Classes and personal training stay HK$ TBC until the class sheet's units
-   are confirmed. */
+   are confirmed (2026-10-13: dummies for the KPay review, see PRICES). */
 const HK_HOLIDAYS = new Set([
   '2026-01-01','2026-02-17','2026-02-18','2026-02-19','2026-04-03','2026-04-04',
   '2026-04-06','2026-04-07','2026-05-01','2026-05-25','2026-06-19','2026-07-01',
@@ -119,6 +131,13 @@ function courtTotal(){
   const f = fromRate(S.court);
   return f == null ? null : { exact:false, v:f };
 }
+/* 2026-10-13: a class or an hour of personal training is one session at
+   the dummy price, so its total is exact from the first step */
+function bookingTotal(){
+  if(MODE === 'venue') return courtTotal();
+  const v = MODE === 'pt' ? PRICES.pt : PRICES.class;
+  return v == null ? null : { exact:true, v };
+}
 const G = k => ((window.STRINGS || {})[L()] || {})[k] || '';   /* landing-page string keys */
 
 /* ---------- data: read from strings.js (window.BOOKING_DATA), not hard-coded ----------
@@ -134,6 +153,10 @@ const CATS = window.BOOKING_DATA.CATS;
 const CLASSES = window.BOOKING_DATA.CLASSES;
 const COACHES = window.BOOKING_DATA.COACHES;
 const SIZES = window.BOOKING_DATA.SIZES;
+/* 2026-10-13: what the online flow offers. One class per booking leaves
+   certificate courses out: they run for weeks, the shape KPay refused. */
+const BOOKABLE_CATS = ONE_CLASS_PER_BOOKING ? CATS.filter(c => c.id !== 'cert') : CATS;
+const BOOKABLE_CLASSES = CLASSES.filter(c => BOOKABLE_CATS.some(k => k.id === c.cat));
 /* round 4 N1/N9: bare sport names for the filter chips, keyed by court id
    plus "sc" for strength and conditioning */
 const SPORTS = window.BOOKING_DATA.SPORTS || {};
@@ -288,7 +311,7 @@ function renderCourts(){
   });
 }
 function renderCats(){
-  document.getElementById('catList').innerHTML = CATS.map(c=>`
+  document.getElementById('catList').innerHTML = BOOKABLE_CATS.map(c=>`
     <button class="opt ${S.cat===c.id?'sel':''}" data-cat="${c.id}">
       <span class="txt"><span class="t">${nm(c)}</span><span class="d">${pick(c,'d')}</span></span>
     </button>`).join('');
@@ -329,7 +352,9 @@ function renderSizes(){
   document.getElementById('sizeList').innerHTML = SIZES.map(s=>`
     <button class="opt ${S.size===s.id?'sel':''}" data-size="${s.id}">
       <span class="txt"><span class="t">${nm(s)}</span><span class="d">${pick(s,'d')}</span>
-      <span class="d">${money(PRICES.pt)} / ${L()==='zh'?'每位':'person'}</span></span>
+      <span class="d">${money(PRICES.pt)} / ${ONE_CLASS_PER_BOOKING
+        ? (L()==='zh'?'堂':'session')   /* 2026-10-13: one price per session, whatever the ratio */
+        : (L()==='zh'?'每位':'person')}</span></span>
     </button>`).join('');
   bind('sizeList','size',v=>{S.size=v;});
 }
@@ -346,11 +371,27 @@ function kindOf(){
   const kinds = new Set(on.map(c => c.kind));
   return kinds.size === 1 ? [...kinds][0] : 'event';
 }
+/* 2026-10-13: with one class per booking a card is one session on one date.
+   A weekly class shows its next meeting, tomorrow at the earliest (prototype
+   dates, like the court and personal training flows); a one-off event shows
+   its own date. */
+function sessionDate(c){
+  if(c.date) return new Date(c.date + 'T00:00:00');
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() + (((c.weekday - d.getDay() + 7) % 7) || 7));
+  return d;
+}
+const sessionDay = c => sessionDate(c).toLocaleDateString(L()==='zh'?'zh-HK':'en-GB',
+  {weekday:'long', day:'numeric', month:L()==='zh'?'long':'short', year:'numeric'});
 /* Round 4 N4: a term course card shows its term range, weekday and lesson
    count; a one-off event shows its date and full time range. */
 function classMeta(c){
   const t = [];
-  if(c.lessons != null){
+  /* 2026-10-13: "to" stayed English in the Chinese view */
+  const span = c.end ? `${c.start} ${L()==='zh'?'至':'to'} ${c.end}` : `${c.start} · ${c.dur} ${T('mins')}`;
+  if(ONE_CLASS_PER_BOOKING){
+    t.push(sessionDay(c), span);
+  } else if(c.lessons != null){
     const dow = T(DOW_KEYS[c.weekday]);
     t.push(`${T('l_term')}: ${c.term} (${dow})`);
     t.push(`${c.start} · ${c.dur} ${T('mins')}`);
@@ -360,13 +401,13 @@ function classMeta(c){
     const ds = d ? d.toLocaleDateString(L()==='zh'?'zh-HK':'en-GB',
                      {day:'numeric', month:L()==='zh'?'long':'short', year:'numeric'}) : '';
     if(ds) t.push(ds);
-    t.push(c.end ? `${c.start} to ${c.end}` : `${c.start} · ${c.dur} ${T('mins')}`);
+    t.push(span);
   }
   return t.map(x=>`<span class="d">${x}</span>`).join('');
 }
 function renderClasses(){
   const chips = document.getElementById('classChips');
-  chips.innerHTML = CATS.map(c=>
+  chips.innerHTML = BOOKABLE_CATS.map(c=>
     `<button class="chip ${S.filters.includes(c.id)?'on':''}" data-f="${c.id}">${nm(c)}</button>`).join('');
   chips.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
     const v=b.dataset.f;
@@ -380,7 +421,7 @@ function renderClasses(){
      list continues, so every sport that actually has a class is listed. */
   const sf = document.getElementById('sportChips');
   if(sf){
-    const ids = [...new Set(CLASSES.map(c=>c.sport).filter(Boolean))];
+    const ids = [...new Set(BOOKABLE_CLASSES.map(c=>c.sport).filter(Boolean))];
     sf.innerHTML = `<button type="button" class="chip ${S.sport?'':'on'}" data-s="">${T('sport_all')}</button>`
       + ids.map(id=>`<button type="button" class="chip ${S.sport===id?'on':''}" data-s="${id}">${sportName(id)}</button>`).join('');
     sf.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
@@ -389,16 +430,20 @@ function renderClasses(){
     });
   }
 
-  const kind = kindOf();
+  /* 2026-10-13: 'single' = one class per booking, every card carries its own
+     date, so neither the weekday chips nor the date strip show */
+  const kind = ONE_CLASS_PER_BOOKING ? 'single' : kindOf();
   const dateWrap = document.getElementById('dates3wrap');
   const dowWrap = document.getElementById('dowWrap');
   const D = days();
-  if(dateWrap) dateWrap.hidden = (kind === 'term');
+  if(dateWrap) dateWrap.hidden = (kind !== 'event');
   if(dowWrap) dowWrap.hidden = (kind !== 'term');
 
-  if(kind === 'term' && dowWrap){
+  if(kind === 'single'){
+    document.getElementById('s3sub').textContent = '';
+  } else if(kind === 'term' && dowWrap){
     /* weekdays that at least one visible course actually meets on */
-    const avail = new Set(CLASSES.filter(c=>c.lessons!=null).map(c=>c.weekday));
+    const avail = new Set(BOOKABLE_CLASSES.filter(c=>c.lessons!=null).map(c=>c.weekday));
     document.getElementById('dow').innerHTML = DOW_KEYS.map((k,i)=>
       `<button type="button" class="chip ${S.dow===i?'on':''}" data-w="${i}" ${avail.has(i)?'':'disabled'}>${T(k)}</button>`).join('');
     document.getElementById('dow').querySelectorAll('.chip').forEach(b=>b.onclick=()=>{
@@ -416,7 +461,7 @@ function renderClasses(){
     document.getElementById('s3sub').textContent = D[S.day].full;
   }
 
-  const list = CLASSES.filter(c=>
+  const list = BOOKABLE_CLASSES.filter(c=>
        (!S.filters.length || S.filters.includes(c.cat))
     && (!S.sport || c.sport === S.sport)
     && (kind !== 'term' || S.dow == null || c.weekday === S.dow));
@@ -434,7 +479,7 @@ function renderClasses(){
         <span class="d">${pick(c,'d')}</span>
         <span class="cl"><span class="cl-av" aria-hidden="true">${AVATAR}</span>${coachLine(c.coach)}</span>
         <span class="tags"><span class="tag">${c.spots} ${T('spots')}</span></span></span>
-      <span class="p">${money(PRICES.class)}</span>
+      <span class="p">${money(PRICES.class)}${ONE_CLASS_PER_BOOKING ? ' / ' + (L()==='zh'?'堂':'class') : ''}</span>
     </button>`).join('') : `<p class="meta">${L()==='zh'?'此篩選沒有課堂。':'No classes match this filter.'}</p>`;
   bind('classList','cls',v=>{S.cls=v;});
 }
@@ -521,8 +566,12 @@ function lines(){
     if(cl) out.push([T('l_coach'), `<span class="wrapv">${coachVal(cl.coach)}</span>`]);
     if(cl) out.push([T('l_dur'), `${cl.dur} ${T('mins')}`]);
     /* round 4 N4: a term course is described by its term, weekday and lesson
-       count; a one-off event by its date. */
-    if(cl && cl.lessons != null){
+       count; a one-off event by its date. 2026-10-13: with one class per
+       booking, the card's own date and start time, and one lesson. */
+    if(ONE_CLASS_PER_BOOKING){
+      out.push([T('l_when'), cl ? `${sessionDay(cl)}, ${cl.start}` : null]);
+      out.push([T('l_lessons'), '1']);
+    } else if(cl && cl.lessons != null){
       out.push([T('l_term'), `${cl.term} (${T(DOW_KEYS[cl.weekday])})`]);
       out.push([T('l_lessons'), String(cl.lessons)]);
     } else {
@@ -535,6 +584,11 @@ function lines(){
     /* round 4 N10: group size became a coaching ratio */
     out.push([T('l_ratio'), sz?nm(sz):null]);
     out.push([T('l_when'), whenText()]);
+    /* 2026-10-13: one session of one hour, said outright for the KPay review */
+    if(ONE_CLASS_PER_BOOKING){
+      out.push([T('l_dur'), `60 ${T('mins')}`]);
+      out.push([T('l_lessons'), '1']);
+    }
   }
   return out;
 }
@@ -549,8 +603,9 @@ function renderSummary(){
   /* round 3: the sticky bar carries no line list, so the hours ride on its
      total instead. */
   /* round 5: court bookings show a real total, exact once every hour has a
-     slot and "from" before that; classes and personal training stay TBC. */
-  const tot = courtTotal();
+     slot and "from" before that. 2026-10-13: classes and personal training
+     show their one-session dummy price from the first step. */
+  const tot = bookingTotal();
   const totHTML = tot == null ? money(null)
     : (tot.exact ? money(tot.v) : G('price.fromTemplate').replace('{p}', money(tot.v)));
   const st = document.getElementById('sumTotal');
@@ -560,10 +615,13 @@ function renderSummary(){
   const s7 = document.getElementById('s7lines');
   /* Round 4 N11: personal training itemises coaching and court hire as
      separate lines before the total, because the client's receipt does.
-     Both read HK$ TBC until the rate card lands, like every other price. */
+     Both read HK$ TBC until the rate card lands, like every other price.
+     2026-10-13: the dummy hour is all in, so the court fee line waits for
+     real prices rather than sit at TBC beside an exact total. */
   const split = MODE==='pt'
-    ? `<div class="li"><span class="k">${T('l_coaching')}</span><span class="v">${money(PRICES.pt)}</span></div>
-       <div class="li"><span class="k">${T('l_courtfee')}</span><span class="v">${money(PRICES.court)}</span></div>`
+    ? `<div class="li"><span class="k">${T('l_coaching')}</span><span class="v">${money(PRICES.pt)}</span></div>`
+      + (ONE_CLASS_PER_BOOKING ? '' :
+      `<div class="li"><span class="k">${T('l_courtfee')}</span><span class="v">${money(PRICES.court)}</span></div>`)
     : '';
   if(s7) s7.innerHTML = `<div class="summary" style="max-width:460px">${html}${split}
     <div class="total"><span>${T('sum_total')}</span><span>${totHTML}</span></div>
@@ -738,7 +796,7 @@ function stamp(d){
   return `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}${p(d.getMinutes())}00`;
 }
 function calEvent(){
-  let title = '', time = S.times[0], mins = 60;
+  let title = '', time = S.times[0], mins = 60, base = dayDate(S.day);
   if(MODE==='venue'){
     const c = COURTS.find(x=>x.id===S.court);
     title = c ? nm(c) : '';
@@ -749,13 +807,14 @@ function calEvent(){
     title = cl ? nm(cl) : '';
     time = CLS_TIME[S.cls] || (cl && cl.start) || CLASS_TIMES[0];
     mins = cl ? cl.dur : 60;
+    if(ONE_CLASS_PER_BOOKING && cl) base = sessionDate(cl);   /* 2026-10-13: the card's own date */
   }
   if(MODE==='pt'){
     const co = COACHES.find(x=>x.id===S.coach);
     title = T('cal_pt') + (co ? ' · ' + co.n : '');
   }
   if(!time) return null;
-  const base = dayDate(S.day), hm = time.split(':').map(Number);
+  const hm = time.split(':').map(Number);
   const start = new Date(base.getFullYear(), base.getMonth(), base.getDate(), hm[0], hm[1], 0);
   const end = new Date(start.getTime() + mins * 60000);
   return { title, start:stamp(start), end:stamp(end), details:`${T('ref')} ${REF} · ${VENUE}` };
@@ -810,5 +869,12 @@ if (document.getElementById('back')) {
   const tcPanel = document.getElementById('tcPanel');
   if(tcPanel) tcPanel.addEventListener('click', e => { if(e.target === tcPanel) closeTerms(); });
   document.addEventListener('keydown', e => { if(e.key === 'Escape') closeTerms(); });
+  /* 2026-10-13: one class per booking, said on the class type step and the
+     ratio step, where the round 4 subtitles would contradict it (they list
+     certificate courses and price each ratio differently) */
+  if(ONE_CLASS_PER_BOOKING){
+    document.querySelector('#s1c .sub').setAttribute('data-str', 'bk.one_class');
+    document.querySelector('#s5b .sub').setAttribute('data-str', 'bk.one_pt');
+  }
   boot(pageExtras);
 }

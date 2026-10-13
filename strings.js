@@ -331,7 +331,9 @@ window.STRINGS = {
     "soon.note1": "Online booking opens soon.",
     "soon.note2": "Until then, message us on WhatsApp.",
     "bk.rate_range": "{off} to {peak} / hour",
-    "bk.rate_from": "from {p} / hour"
+    "bk.rate_from": "from {p} / hour",
+    "bk.one_class": "Each booking is for one class only, paid per class.",
+    "bk.one_pt": "Coach to athlete. Each booking is for one session of one hour."
   },
   "zh": {
     "nav.home": "主頁",
@@ -662,7 +664,9 @@ window.STRINGS = {
     "soon.note1": "網上預約即將開放。",
     "soon.note2": "開放前請用 WhatsApp 查詢。",
     "bk.rate_range": "{off} 至 {peak} / 小時",
-    "bk.rate_from": "由 {p} 起 / 小時"
+    "bk.rate_from": "由 {p} 起 / 小時",
+    "bk.one_class": "每次預約只限一堂課，按堂付費。",
+    "bk.one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。"
   }
 };
 window.BOOKING_DATA = {
@@ -783,7 +787,9 @@ window.BOOKING_DATA = {
       "cr_split": "The receipt itemises coaching and court hire as separate lines, charged in one transaction. Confirm with Edward.",
       "cr_eva": "Training class registration should copy EVA's member registration questions exactly (client, 2026-09-24). Nobody has supplied EVA's field list, so this form is unchanged pending it.",
       "rate_range": "{off} to {peak} / hour",
-      "rate_from": "from {p} / hour"
+      "rate_from": "from {p} / hour",
+      "one_class": "Each booking is for one class only, paid per class.",
+      "one_pt": "Coach to athlete. Each booking is for one session of one hour."
     },
     "zh": {
       "wa_aria": "WhatsApp 查詢",
@@ -901,7 +907,9 @@ window.BOOKING_DATA = {
       "cr_split": "收據會將教練服務及球場租用分項列出，並於同一筆交易收取。請與 Edward 確認。",
       "cr_eva": "訓練課程報名應完全複製 EVA 的會員登記問題（客戶，2026-09-24）。由於未收到 EVA 的欄位清單，此表格維持不變，有待提供。",
       "rate_range": "{off} 至 {peak} / 小時",
-      "rate_from": "由 {p} 起 / 小時"
+      "rate_from": "由 {p} 起 / 小時",
+      "one_class": "每次預約只限一堂課，按堂付費。",
+      "one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。"
     }
   },
   "COURTS": [

@@ -114,7 +114,7 @@ function rateRow(){
 }
 function slotPrice(dayIdx, t){
   const r = rateRow();
-  return r ? (isPeak(dayDate(dayIdx), t) ? r.peak : r.off) : null;
+  return r ? (isPeak(slotDate(dayIdx, t), t) ? r.peak : r.off) : null;   /* 2026-10-17: the hour's real date */
 }
 /* the lowest rate the current choice can cost per hour, for "from" lines */
 function fromRate(id){
@@ -207,13 +207,36 @@ const REF = 'SHHK-2026-0001';             /* was inline in renderRecap */
 
 const TIMES = ["07:00","08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00",
                "16:00","17:00","18:00","19:00","20:00","21:00","22:00"];
+/* ---------- 2026-10-17: overnight court hire, 23:00 to 07:00 ----------
+   ID-door call (2026-10-10): from 07:00 to 23:00 people check in at the front
+   desk with their HKID. From 23:00 to 07:00 entry is by QR code: a booking
+   that reaches that window gets one on the confirmation page (not by email)
+   that opens the door, one code for the whole group, valid from the
+   booking's start to its end.
+   A night belongs to the evening it starts on. The date strip picks the
+   evening, and 00:00 to 06:00 are the next calendar day: the grid marks them
+   "next day", and the summary, the QR validity line and the calendar event
+   carry the real date. That date change at midnight is the trap the call
+   flagged. Court hire only: classes and personal training run 07:00 to
+   23:00, so their grid stays TIMES.
+   2026-10-18: one switch for the whole block. false takes the night hours off
+   the court grid, so no booking reaches the QR window and every confirmation
+   shows the front-desk line (waits on Suki: overnight bookable online?). */
+const OVERNIGHT_ONLINE = true;
+const NIGHT_TIMES = OVERNIGHT_ONLINE ? ["23:00","00:00","01:00","02:00","03:00","04:00","05:00","06:00"] : [];
+const ALL_TIMES = TIMES.concat(NIGHT_TIMES);
+const QR_FROM = 23, QR_UNTIL = 7;   /* the QR entry window */
 /* class session start times, one per card position. Lifted out of
    renderClasses (round 2 item 11) so the calendar link can read back the time
    the chosen card actually showed. */
 const CLASS_TIMES = ["09:00","12:30","18:00","19:30","20:30"];
 const CLS_TIME = {};
-/* deterministic "already booked" pattern, so the demo looks the same every load */
-const taken = (dayIdx, i) => ((dayIdx * 7 + i * 5) % 11) < 3;
+/* deterministic "already booked" pattern, so the demo looks the same every load.
+   2026-10-17: the night slots (index 16 up) use a sparser pattern of their
+   own, so the 07:00 to 22:00 pattern is unchanged. */
+const taken = (dayIdx, i) => i < TIMES.length
+  ? ((dayIdx * 7 + i * 5) % 11) < 3
+  : ((dayIdx + i) % 7) === 0;
 
 /* ---------- state ---------- */
 const qs = new URLSearchParams(location.search);
@@ -237,8 +260,9 @@ const S = { i:0, court:null, cat:null, cls:null, coach:null, size:null, day:0,
 
 if (qs.get("court") && COURTS.some(c=>c.id===qs.get("court"))) S.court = qs.get("court");
 /* round 3: ?t= preselects a slot. TIMES is defined above, so an unknown value
-   is ignored rather than becoming a selection the grid cannot show. */
-if (qs.get("t") && TIMES.includes(qs.get("t"))) S.times = [qs.get("t")];
+   is ignored rather than becoming a selection the grid cannot show.
+   2026-10-17: court hire also accepts the night hours its grid shows. */
+if (qs.get("t") && (MODE === "venue" ? ALL_TIMES : TIMES).includes(qs.get("t"))) S.times = [qs.get("t")];
 
 const L  = () => lang();
 const T  = k => (STR[L()] || STR.en)[k];
@@ -491,14 +515,45 @@ function renderClasses(){
    which is why 10:00 and 12:00 looked taken to Siu. Only booked slots are
    struck through. Personal training still books one slot. */
 const hourOf = t => Number(t.slice(0, 2));
+/* 2026-10-17: neighbours are read off the grid's order, not the clock, so
+   23:00 and 00:00 sit side by side and 06:00 (next morning) is not next to
+   07:00 (this morning) */
+const slotIdx = t => ALL_TIMES.indexOf(t);
 function adjacentTo(t){
-  return MODE === 'venue' && S.times.length === 1 && Math.abs(hourOf(t) - hourOf(S.times[0])) === 1;
+  return MODE === 'venue' && S.times.length === 1 && Math.abs(slotIdx(t) - slotIdx(S.times[0])) === 1;
 }
 function pickSlot(t){
   if(S.times.includes(t)){ S.times = S.times.filter(x => x !== t); return; }
-  if(adjacentTo(t) && S.times.length < MAX_HOURS){ S.times = S.times.concat(t).sort(); return; }
+  if(adjacentTo(t) && S.times.length < MAX_HOURS){ S.times = S.times.concat(t).sort((a, b) => slotIdx(a) - slotIdx(b)); return; }
   S.times = [t];
 }
+
+/* ---------- 2026-10-17: night hours, real dates, the QR window ---------- */
+const afterMidnight = t => hourOf(t) < QR_UNTIL;              /* 00:00 to 06:00 on the grid */
+const inQrWindow = t => hourOf(t) >= QR_FROM || hourOf(t) < QR_UNTIL;
+/* the calendar date an hour on the grid falls on: the picked date, or the
+   day after it for 00:00 to 06:00 */
+function slotDate(dayIdx, t){ return dayDate(dayIdx + (afterMidnight(t) ? 1 : 0)); }
+function slotStart(dayIdx, t){ const d = slotDate(dayIdx, t); d.setHours(hourOf(t), 0, 0, 0); return d; }
+/* start and end of the booked hours (pickSlot keeps them back to back) */
+function bookingSpan(){
+  if(!S.times.length) return null;
+  const a = slotStart(S.day, S.times[0]);
+  return [a, new Date(a.getTime() + S.times.length * 3600000)];
+}
+const needsQr = () => MODE === 'venue' && S.times.some(inQrWindow);
+const loc = () => L()==='zh' ? 'zh-HK' : 'en-GB';
+/* same shape as days().full, for any date */
+const dayLong = d => d.toLocaleDateString(loc(), {weekday:'long', day:'numeric', month:L()==='zh'?'long':'short'});
+const dayShort = d => d.toLocaleDateString(loc(), {weekday:'short', day:'numeric', month:L()==='zh'?'long':'short'});
+const hm = d => `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+/* both ends of a span: the end carries its own date only when the span
+   crosses midnight, e.g. "Saturday 17 Oct, 23:00" and "Sunday 18 Oct, 01:00" */
+function spanEnds(a, b){
+  return [`${dayLong(a)}, ${hm(a)}`, ymd(a) === ymd(b) ? hm(b) : `${dayLong(b)}, ${hm(b)}`];
+}
+/* a date and time never splits across lines; the span breaks at "to" */
+const nw = s => `<span class="nw">${s}</span>`;
 function needed(){ return 1; }
 function renderSlots(){
   const D = days();
@@ -511,7 +566,7 @@ function renderSlots(){
     : nm(COURTS.find(c=>c.id===S.court)||{en:'',zh:''})
       + (MODE==='venue' && twoCourts(S.court) && S.csize ? ', ' + G('prices.court' + S.csize) : '');   /* round 6: A and B cost different amounts */
   document.getElementById('s2sub').textContent = who + ' · ' + D[S.day].full;
-  document.getElementById('slots').innerHTML = TIMES.map((t,i)=>{
+  const slot = (t,i)=>{
     const gone = taken(S.day,i);
     const on = S.times.includes(t);
     /* the free hour either side of a single pick: tap it for two hours */
@@ -519,8 +574,18 @@ function renderSlots(){
     /* round 5: on a court booking each slot shows what that hour costs */
     const p = MODE==='venue' ? slotPrice(S.day, t) : null;
     const price = p == null ? '' : `<span class="tp">${money(p)}</span>`;
-    return `<button class="tslot ${on?'on':''} ${adj?'adj':''} ${p!=null&&isPeak(dayDate(S.day), t)?'peak':''}" data-t="${t}" ${gone?'disabled':''}>${t}${price}</button>`;
-  }).join('');
+    /* 2026-10-17: 00:00 to 06:00 fall on the next calendar day */
+    const nd = afterMidnight(t) ? `<span class="nd">${T('next_day')}</span>` : '';
+    return `<button class="tslot ${on?'on':''} ${adj?'adj':''} ${p!=null&&isPeak(slotDate(S.day, t), t)?'peak':''} ${inQrWindow(t)?'night':''}" data-t="${t}" ${gone?'disabled':''}>${t}${nd}${price}</button>`;
+  };
+  /* 2026-10-17: court hire adds the overnight block under its own heading,
+     which names the evening and the morning it runs into */
+  const night = MODE==='venue' && NIGHT_TIMES.length
+    ? `<div class="slot-night" id="slotNight"><p class="sn-h">${T('night_h')}</p>`
+      + `<p class="sn-sub">${T('night_sub').replace('{d1}', dayShort(dayDate(S.day))).replace('{d2}', dayShort(dayDate(S.day + 1)))}</p></div>`
+      + NIGHT_TIMES.map((t,j)=>slot(t, TIMES.length + j)).join('')
+    : '';
+  document.getElementById('slots').innerHTML = TIMES.map((t,i)=>slot(t,i)).join('') + night;
   const rn = document.getElementById('s2rates');
   if(rn){ rn.hidden = MODE!=='venue'; rn.textContent = G('prices.hours'); }
   const sn = document.getElementById('s2note');
@@ -544,6 +609,12 @@ function bind(id, key, fn){
 function whenText(){
   const D = days();
   if(!S.times.length) return null;
+  /* 2026-10-17: a court booking that reaches the night reads as a span with
+     the real dates, because 00:00 onwards is the next calendar day */
+  if(MODE==='venue' && S.times.some(inQrWindow)){
+    const [from, to] = spanEnds(...bookingSpan());
+    return `<span class="spanv">${nw(from)} ${T('time_to')} ${nw(to)}</span>`;
+  }
   const sep = L()==='zh' ? '、' : ', ';
   return `${D[S.day].full}, ${S.times.join(sep)}`;
 }
@@ -746,6 +817,9 @@ function render(){
 
   const last = id==='s8';
   const isPay = id==='s7';
+  /* 2026-10-17: the QR confirmation is made to be screenshotted, so it
+     tightens up and the WhatsApp bubble stays off the card */
+  document.body.classList.toggle('qr-on', last && needsQr());
   document.getElementById('summary').hidden = last;
   document.getElementById('bar').style.display = last ? 'none' : '';
   document.body.classList.toggle('has-bar', !last);
@@ -777,9 +851,56 @@ function renderRecap(){
   const art = MODE==='venue'
     ? diaFor(COURTS.find(c=>c.id===S.court))
     : DIA['basketball'];
-  document.getElementById('recap').innerHTML =
+  /* 2026-10-17: a booking that reaches 23:00 to 07:00 carries its door QR
+     code on this card, under the booking details, so one phone screenshot
+     holds both (ID-door call 2026-10-10). Every other booking checks in at
+     the front desk. */
+  const qr = needsQr();
+  const rc = document.getElementById('recap');
+  rc.classList.toggle('has-qr', qr);
+  rc.innerHTML =
     `<div class="watermark">${art}</div>${lineHTML()}
-     <div class="li"><span class="k">${T('ref')}</span><span class="v">${REF}</span></div>`;
+     <div class="li"><span class="k">${T('ref')}</span><span class="v">${REF}</span></div>`
+    + (qr ? qrPassHTML() : `<p class="checkin">${T('checkin_desk')}</p>`);
+  const cr = document.getElementById('crQr');
+  if(cr) cr.hidden = !qr;
+}
+function qrPassHTML(){
+  const [a, b] = bookingSpan();
+  const [from, to] = spanEnds(a, b);
+  return `<div class="qrpass" id="qrpass">
+      <p class="qr-h">${T('qr_h')}</p>
+      <div class="qr" role="img" aria-label="${T('qr_h')}, ${T('qr_sample')}">${qrSVG(`${REF}|${stamp(a)}|${stamp(b)}`)}</div>
+      <p class="qr-sample">${T('qr_sample')}</p>
+      <p class="qr-valid">${T('qr_valid').replace('{from}', nw(from)).replace('{to}', nw(to))}</p>
+      <p class="qr-note">${[T('qr_group'), T('qr_shot')].join(L()==='zh' ? '' : ' ')}</p>
+    </div>`;
+}
+/* A sample code drawn like a version 2 QR code (25 x 25 modules: three
+   finder squares, the timing lines, one alignment square), its data modules
+   seeded from the reference and the booking window so each booking looks
+   different. It does not decode: the Bliss backend issues the real code. */
+function qrSVG(seed){
+  const N = 25, m = [...Array(N)].map(() => Array(N).fill(null));
+  const finder = (r0, c0) => {
+    for(let r = -1; r <= 7; r++) for(let c = -1; c <= 7; c++){
+      const R = r0 + r, C = c0 + c;
+      if(R < 0 || C < 0 || R >= N || C >= N) continue;
+      const ring = Math.max(Math.abs(r - 3), Math.abs(c - 3));
+      m[R][C] = ring !== 2 && ring !== 4;   /* 3x3 core, light ring, dark 7x7 edge, light separator */
+    }
+  };
+  finder(0, 0); finder(0, N - 7); finder(N - 7, 0);
+  for(let i = 8; i < N - 8; i++){ m[6][i] = m[i][6] = i % 2 === 0; }
+  for(let r = -2; r <= 2; r++) for(let c = -2; c <= 2; c++) m[18 + r][18 + c] = Math.max(Math.abs(r), Math.abs(c)) !== 1;
+  let h = 2166136261;                       /* FNV-1a over the seed, then xorshift */
+  for(const ch of seed){ h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+  const rnd = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  let d = '';
+  for(let r = 0; r < N; r++) for(let c = 0; c < N; c++){
+    if(m[r][c] == null ? rnd() < 0.5 : m[r][c]) d += `M${c + 2} ${r + 2}h1v1h-1z`;
+  }
+  return `<svg viewBox="0 0 ${N + 4} ${N + 4}" shape-rendering="crispEdges" aria-hidden="true" focusable="false"><path d="${d}" fill="currentColor"/></svg>`;
 }
 
 /* ---------- round 2 item 11: add to calendar (s8) ----------
@@ -801,6 +922,8 @@ function calEvent(){
     const c = COURTS.find(x=>x.id===S.court);
     title = c ? nm(c) : '';
     mins = 60 * Math.max(1, S.times.length);   /* round 6: two back-to-back hours */
+    /* 2026-10-17: a night that starts after midnight starts on the next day */
+    if(time && afterMidnight(time)) base = dayDate(S.day + 1);
   }
   if(MODE==='class'){
     const cl = CLASSES.find(x=>x.id===S.cls);

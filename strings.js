@@ -333,7 +333,18 @@ window.STRINGS = {
     "bk.rate_range": "{off} to {peak} / hour",
     "bk.rate_from": "from {p} / hour",
     "bk.one_class": "Each booking is for one class only, paid per class.",
-    "bk.one_pt": "Coach to athlete. Each booking is for one session of one hour."
+    "bk.one_pt": "Coach to athlete. Each booking is for one session of one hour.",
+    "bk.night_h": "Overnight, 23:00 to 07:00",
+    "bk.night_sub": "Night of {d1} into {d2}. The door opens with a QR code that comes with your booking.",
+    "bk.next_day": "next day",
+    "bk.time_to": "to",
+    "bk.qr_h": "Your entry QR code",
+    "bk.qr_valid": "The code opens the door from {from} to {to}.",
+    "bk.qr_group": "One code lets your whole group in.",
+    "bk.qr_shot": "Screenshot this page now. We don't email the code.",
+    "bk.qr_sample": "Sample code",
+    "bk.checkin_desk": "Check in at the front desk with your HKID.",
+    "bk.cr_qr": "Any booking that runs into 23:00 to 07:00 shows a QR code on this page instead of in the email (call, 2026-10-10). The Bliss backend generates the code. Each booking gets one code for the whole group, and it opens the door only between the booking's start and end, including after midnight. Not yet decided: which day a night booking counts toward for the 2-hour daily cap. Confirm with Edward."
   },
   "zh": {
     "nav.home": "主頁",
@@ -666,7 +677,18 @@ window.STRINGS = {
     "bk.rate_range": "{off} 至 {peak} / 小時",
     "bk.rate_from": "由 {p} 起 / 小時",
     "bk.one_class": "每次預約只限一堂課，按堂付費。",
-    "bk.one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。"
+    "bk.one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。",
+    "bk.night_h": "深夜時段，23:00 至 07:00",
+    "bk.night_sub": "由 {d1} 深夜至 {d2}。憑預約附帶的二維碼開門。",
+    "bk.next_day": "翌日",
+    "bk.time_to": "至",
+    "bk.qr_h": "你的入場二維碼",
+    "bk.qr_valid": "此二維碼可於 {from} 至 {to} 開門。",
+    "bk.qr_group": "一個二維碼可供全組人入場。",
+    "bk.qr_shot": "請即截圖此頁。我們不會以電郵發送二維碼。",
+    "bk.qr_sample": "示範二維碼",
+    "bk.checkin_desk": "請於接待處出示香港身份證登記。",
+    "bk.cr_qr": "任何預約如涵蓋 23:00 至 07:00，二維碼會顯示於此頁，而非在電郵中（2026-10-10 通話）。二維碼由 Bliss 後台產生。每個預約有一個二維碼，供全組使用，只在預約開始至結束期間可開門，包括午夜之後。尚未決定：深夜時段的預約應計入哪一天，以計算每日 2 小時上限。請與 Edward 確認。"
   }
 };
 window.BOOKING_DATA = {
@@ -789,7 +811,18 @@ window.BOOKING_DATA = {
       "rate_range": "{off} to {peak} / hour",
       "rate_from": "from {p} / hour",
       "one_class": "Each booking is for one class only, paid per class.",
-      "one_pt": "Coach to athlete. Each booking is for one session of one hour."
+      "one_pt": "Coach to athlete. Each booking is for one session of one hour.",
+      "night_h": "Overnight, 23:00 to 07:00",
+      "night_sub": "Night of {d1} into {d2}. The door opens with a QR code that comes with your booking.",
+      "next_day": "next day",
+      "time_to": "to",
+      "qr_h": "Your entry QR code",
+      "qr_valid": "The code opens the door from {from} to {to}.",
+      "qr_group": "One code lets your whole group in.",
+      "qr_shot": "Screenshot this page now. We don't email the code.",
+      "qr_sample": "Sample code",
+      "checkin_desk": "Check in at the front desk with your HKID.",
+      "cr_qr": "Any booking that runs into 23:00 to 07:00 shows a QR code on this page instead of in the email (call, 2026-10-10). The Bliss backend generates the code. Each booking gets one code for the whole group, and it opens the door only between the booking's start and end, including after midnight. Not yet decided: which day a night booking counts toward for the 2-hour daily cap. Confirm with Edward."
     },
     "zh": {
       "wa_aria": "WhatsApp 查詢",
@@ -909,7 +942,18 @@ window.BOOKING_DATA = {
       "rate_range": "{off} 至 {peak} / 小時",
       "rate_from": "由 {p} 起 / 小時",
       "one_class": "每次預約只限一堂課，按堂付費。",
-      "one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。"
+      "one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。",
+      "night_h": "深夜時段，23:00 至 07:00",
+      "night_sub": "由 {d1} 深夜至 {d2}。憑預約附帶的二維碼開門。",
+      "next_day": "翌日",
+      "time_to": "至",
+      "qr_h": "你的入場二維碼",
+      "qr_valid": "此二維碼可於 {from} 至 {to} 開門。",
+      "qr_group": "一個二維碼可供全組人入場。",
+      "qr_shot": "請即截圖此頁。我們不會以電郵發送二維碼。",
+      "qr_sample": "示範二維碼",
+      "checkin_desk": "請於接待處出示香港身份證登記。",
+      "cr_qr": "任何預約如涵蓋 23:00 至 07:00，二維碼會顯示於此頁，而非在電郵中（2026-10-10 通話）。二維碼由 Bliss 後台產生。每個預約有一個二維碼，供全組使用，只在預約開始至結束期間可開門，包括午夜之後。尚未決定：深夜時段的預約應計入哪一天，以計算每日 2 小時上限。請與 Edward 確認。"
     }
   },
   "COURTS": [

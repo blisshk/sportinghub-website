@@ -488,3 +488,36 @@ html[data-view="client"] .cr{ display:none !important; }
 .tslot .tp{ font-size:12px; font-weight:500; color:var(--meta-grey); line-height:1.2; }
 .tslot.on .tp{ color:rgba(251,243,228,.85); }
 .tslot:disabled .tp{ color:inherit; }
+
+/* ============ 2026-10-17: overnight court hire and the door QR code ============
+   ID-door call 2026-10-10: entry from 23:00 to 07:00 is by QR code, so night
+   hours sit in their own block on the grid, and a booking that reaches them
+   carries a QR code on the confirmation card. 07:00 to 23:00 bookings check
+   in at the desk. */
+.slot-night{ grid-column:1 / -1; margin-top:10px; padding-top:14px; border-top:1px dashed var(--hairline); }
+.slot-night .sn-h{ font-family:var(--f-display); font-weight:600; font-size:15px; color:var(--deep-navy); line-height:1.3; margin:0; }
+.slot-night .sn-sub{ font-size:13.5px; color:var(--charcoal); line-height:1.45; margin:3px 0 4px; }
+.tslot .nd{ font-size:11px; font-weight:600; color:var(--sideline-navy); line-height:1.2; }
+.tslot.on .nd{ color:var(--court-cream); }
+.tslot:disabled .nd{ color:inherit; }
+/* a night span wraps between its two ends, never inside a date and time */
+.nw{ white-space:nowrap; }
+.li .v .spanv{ display:inline-block; white-space:normal; text-align:right; }
+.li:has(.spanv) .k{ flex-shrink:0; }
+/* the QR card replaces the court watermark, which would sit across the code */
+.recap.has-qr .watermark{ display:none; }
+.recap .checkin{ position:relative; z-index:1; margin:12px 0 0; font-size:13.5px; color:var(--charcoal); }
+.qrpass{ position:relative; z-index:1; margin-top:12px; padding-top:12px; border-top:1px dashed var(--hairline); text-align:center; }
+.qr-h{ font-family:var(--f-display); font-weight:600; font-size:16px; color:var(--deep-navy); line-height:1.3; margin:0 0 8px; }
+.qr{ width:148px; height:148px; margin:0 auto; padding:5px; background:var(--raised-cream); border:1px solid var(--hairline); border-radius:var(--r-input); color:var(--charcoal); }
+.qr svg{ display:block; width:100%; height:100%; }
+.qr-sample{ font-family:var(--f-garnish); text-transform:uppercase; letter-spacing:.06em; font-size:11px; font-weight:700; color:var(--charcoal); margin:5px 0 0; }
+html[lang="zh-Hant"] .qr-sample{ font-family:"Noto Sans TC",sans-serif; letter-spacing:0; }
+.qr-valid{ font-weight:600; font-size:14px; color:var(--deep-navy); line-height:1.45; margin:8px 0 3px; }
+.qr-note{ font-size:13.5px; color:var(--charcoal); line-height:1.45; margin:0; }
+/* the QR confirmation is made to be screenshotted on a phone: a smaller tick,
+   and the WhatsApp bubble off the card (it is off checkout too) */
+body.qr-on .wa-float{ display:none; }
+body.qr-on #s8 .done-mark{ width:36px; height:36px; margin-bottom:10px; }
+body.qr-on #s8 .done-mark svg{ width:18px; height:18px; }
+body.qr-on #s8 .sub{ margin-bottom:14px; }

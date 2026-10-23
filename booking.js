@@ -696,7 +696,7 @@ function renderSummary(){
     : '';
   if(s7) s7.innerHTML = `<div class="summary" style="max-width:460px">${html}${split}
     <div class="total"><span>${T('sum_total')}</span><span>${totHTML}</span></div>
-    <p class="policy">${T('policy')}</p></div>`;
+    <p class="policy">${T('policy')} <a href="terms.html#refund" target="_blank" rel="noopener">${T('policy_link')}</a></p></div>`;
 }
 
 /* ---------- flow control ---------- */
@@ -755,50 +755,25 @@ function renderForm(){
   const eva = document.getElementById('crEva');
   if(eva) eva.hidden = !(MODE==='class' && !full);
 
-  /* Round 3 A6 / round 4 N8: make the words "terms and conditions" inside the
-     waiver sentence clickable, in whichever position that phrase occupies in
-     the current language. Built here rather than in the markup because both
-     halves are translated strings: appending a second copy of the phrase
-     after the sentence would print it twice. */
+  /* Round 3 A6 / round 4 N8: make the words "Terms of Service Policy" inside
+     the checkbox sentence a link, in whichever position that phrase occupies
+     in the current language. Built here rather than in the markup because
+     both halves are translated strings: appending a second copy of the phrase
+     after the sentence would print it twice.
+     2026-10-23: the client's terms arrived as one set for every category
+     (KPay approval), so the link opens terms.html in a new tab instead of the
+     per-category placeholder panel. A link inside a <label> does not toggle
+     the checkbox when clicked. */
   const wt = document.getElementById('waiverText');
   if(wt){
     const sentence = T('c_waiv'), phrase = T('tc_link');
     const at = sentence.indexOf(phrase);
     const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const link = `<a class="tc-open" id="tcOpen" href="terms.html#terms" target="_blank" rel="noopener">${esc(phrase)}</a>`;
     wt.innerHTML = at === -1
-      ? `${esc(sentence)} <span class="tc-open" id="tcOpen" role="button" tabindex="0">${esc(phrase)}</span>`
-      : esc(sentence.slice(0, at))
-        + `<span class="tc-open" id="tcOpen" role="button" tabindex="0">${esc(phrase)}</span>`
-        + esc(sentence.slice(at + phrase.length));
-    const btn = document.getElementById('tcOpen');
-    if(btn){
-      /* a span, not a button: a button is an atomic inline-block, so a long
-         phrase would sit on its own line instead of flowing inside the
-         sentence. role and keyboard handling are restored by hand. */
-      btn.onclick = e => { e.preventDefault(); e.stopPropagation(); openTerms(); };
-      btn.onkeydown = e => {
-        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); e.stopPropagation(); openTerms(); }
-      };
-    }
+      ? `${esc(sentence)} ${link}`
+      : esc(sentence.slice(0, at)) + link + esc(sentence.slice(at + phrase.length));
   }
-}
-/* which set of terms this booking falls under */
-function tcKey(){
-  if(MODE==='venue') return 'venue';
-  if(MODE==='pt') return 'pt';
-  const cat = bookedCat();
-  return cat ? cat.id : 'venue';
-}
-function openTerms(){
-  const dlg = document.getElementById('tcPanel');
-  if(!dlg) return;
-  document.getElementById('tcTitle').textContent = T('tc_h_' + tcKey());
-  document.getElementById('tcText').textContent = T('tc_pending');
-  dlg.hidden = false;
-}
-function closeTerms(){
-  const dlg = document.getElementById('tcPanel');
-  if(dlg) dlg.hidden = true;
 }
 
 function render(){
@@ -984,14 +959,6 @@ if (document.getElementById('back')) {
   ['fFirst','fLast','fHkid','fEmail','fPhone','fDob','fGender','fHear','cWaiver'].forEach(i=>{
     const el=document.getElementById(i); if(el) el.addEventListener('input', sync);
   });
-  /* round 4 N8 + round 3 A6: the terms panel. The open button is built by
-     renderForm (the link sits inside a translated sentence), so only the
-     panel's own dismiss handlers are wired here. */
-  const tcClose = document.getElementById('tcClose');
-  if(tcClose) tcClose.onclick = closeTerms;
-  const tcPanel = document.getElementById('tcPanel');
-  if(tcPanel) tcPanel.addEventListener('click', e => { if(e.target === tcPanel) closeTerms(); });
-  document.addEventListener('keydown', e => { if(e.key === 'Escape') closeTerms(); });
   /* 2026-10-13: one class per booking, said on the class type step and the
      ratio step, where the round 4 subtitles would contradict it (they list
      certificate courses and price each ratio differently) */

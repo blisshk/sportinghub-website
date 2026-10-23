@@ -961,3 +961,42 @@ html[lang="zh-Hant"] .hero-a .hero-text-block .lead{ word-break:keep-all; overfl
   .space-tile .scrim.scrim-tile{ height:62%; background:linear-gradient(180deg, rgba(17,37,72,0) 0%, rgba(17,37,72,.45) 35%, rgba(17,37,72,.85) 100%); }
 }
 .space-tile .tile-text .h-tile{ text-wrap:balance; }
+
+/* ============ terms page (terms.html, 2026-10-23) ============ */
+/* The client's terms, privacy and refund policies for KPay approval. Her
+   Chinese and English bodies sit side by side in the markup; the language
+   toggle shows one. Reading measure is the site's text column. */
+html:not([lang="zh-Hant"]) .legal-zh, html[lang="zh-Hant"] .legal-en{ display:none; }
+.legal-page{ padding:28px 0 var(--section-gap); }
+.legal-wrap{ max-width:calc(var(--text-col) + 2 * var(--gut)); }
+.legal-back{ font-size:15px; margin-bottom:20px; }
+.legal-back:hover{ text-decoration:underline; text-underline-offset:3px; }
+.legal-title{ margin-bottom:16px; }
+.legal-updated{ font-size:var(--fs-meta); color:var(--meta-grey); margin-top:14px; }
+.legal-toc{
+  margin:28px 0 0; padding:18px 20px 12px; background:var(--raised-cream);
+  border:1px solid var(--hairline); border-radius:var(--r-card);
+}
+.legal-toc ol{ list-style:decimal; padding-left:1.4em; color:var(--sideline-navy); }
+.legal-toc a{ display:inline-flex; align-items:center; min-height:40px; color:var(--sideline-navy); text-decoration:underline; text-underline-offset:3px; }
+.legal-sec{ padding-top:48px; scroll-margin-top:72px; }
+@media(min-width:1000px){ .legal-sec{ scroll-margin-top:80px; } }
+.legal-sec h2{ font-size:26px; line-height:1.2; margin:0 0 18px; }
+.legal-sec ul{ list-style:disc; padding-left:1.3em; display:grid; gap:14px; }
+.legal-sec ul ul{ list-style:circle; margin-top:8px; gap:10px; }
+.legal-sec li{ font-size:16px; line-height:1.7; }
+.legal-sec li::marker{ color:var(--sideline-navy); }
+.legal-sec strong{ font-weight:600; color:var(--deep-navy); }
+.legal-contact .facts{ margin:20px 0 0; }
+.legal-contact .facts-row dd{ word-break:normal; overflow-wrap:anywhere; }
+/* footer legal links: small, one row above the bottom bar (every page that
+   carries the footer links them, as the client asked) */
+.footer-legal{ display:flex; flex-wrap:wrap; gap:0 20px; margin-top:28px; }
+.footer-legal a{
+  display:inline-flex; align-items:center; min-height:44px; font-size:13px;
+  color:rgba(251,243,228,.75); text-decoration:underline; text-underline-offset:3px;
+}
+.footer-legal a:hover{ color:var(--court-cream); }
+.footer-legal + .footer-bottom{ margin-top:12px; }
+.legal-footer{ padding-top:20px; }
+.legal-footer .footer-legal{ margin-top:0; }

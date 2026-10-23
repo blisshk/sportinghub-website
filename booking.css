@@ -299,28 +299,13 @@ input:focus,textarea:focus,select:focus{ border-color:var(--sideline-navy); }
 .chip:disabled{ opacity:.35; cursor:default; }
 .chip:disabled:hover{ border-color:var(--hairline); }
 
-/* N8: the words "terms and conditions" inside the waiver sentence are the
-   link. A <span role="button"> rather than a <button>, because a button is an
-   atomic inline-block: a long phrase would sit on its own line instead of
-   flowing inside the sentence. */
+/* N8: the words "Terms of Service Policy" inside the checkbox sentence are a
+   link to terms.html (2026-10-23; until then they opened a placeholder panel). */
 .tc-open{
   color:var(--sideline-navy); text-decoration:underline; text-underline-offset:2px;
-  cursor:pointer;
 }
 .tc-open:focus-visible{ outline:2px solid var(--sideline-navy); outline-offset:2px; }
 .check > span{ display:block; }
-.tc-panel{
-  position:fixed; inset:0; z-index:200; background:rgba(20,28,44,.46);
-  display:flex; align-items:center; justify-content:center; padding:20px;
-}
-.tc-panel[hidden]{ display:none; }
-.tc-card{
-  background:var(--raised-cream); border:1px solid var(--hairline);
-  border-radius:var(--r-card); padding:24px; max-width:460px; width:100%;
-  max-height:80vh; overflow:auto;
-}
-.tc-card h2{ font-size:20px; margin:0 0 12px; }
-.tc-card p{ font-size:14.5px; line-height:1.6; margin:0 0 18px; color:var(--charcoal); }
 
 /* ============ summary (desktop aside + s7 injected block) ============ */
 .summary{
@@ -342,6 +327,7 @@ aside.summary{ display:none; }
 }
 .summary .btn{ width:100%; margin-top:15px; }
 .policy{ margin-top:13px; font-size:12.5px; color:var(--meta-grey); line-height:1.5; border-top:1px solid var(--hairline); padding-top:12px; }
+.policy a{ color:var(--sideline-navy); text-decoration:underline; text-underline-offset:2px; white-space:nowrap; }
 .sum-mobile{ display:block; }
 @media(min-width:960px){ .sum-mobile{ display:none; } }
 

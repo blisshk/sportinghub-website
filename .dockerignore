@@ -1,0 +1,11 @@
+.git
+.next
+.pnpm-store
+node_modules
+out
+coverage
+.env*
+*.tsbuildinfo
+next-env.d.ts
+*.log
+.DS_Store

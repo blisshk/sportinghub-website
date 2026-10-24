@@ -1,0 +1,513 @@
+{
+  "nav": {
+    "home": "主頁",
+    "service": "服務",
+    "shop": "商店",
+    "team": "我們的團隊",
+    "corporate": "企業活動",
+    "media": "媒體",
+    "contact": "聯絡我們",
+    "menu_aria": "選單",
+    "lang_aria": "語言",
+    "shopTbc": "商店連結待定",
+    "mediaTbc": "頁面下階段推出",
+    "closeAria": "關閉",
+    "home_aria": "Sporting Hub Hong Kong，主頁"
+  },
+  "cta": {
+    "book": "預約球場",
+    "classes": "查看課程"
+  },
+  "hero": {
+    "eyebrow": "2026年12月開幕",
+    "lead": "香港人的運動主場，球場、教練與恢復兼備。",
+    "photos_aria": "場地相片",
+    "previous_aria": "上一張相片",
+    "next_aria": "下一張相片",
+    "slide_aria": "第 {n} 張相片",
+    "carousel_role": "輪播"
+  },
+  "pillar": {
+    "venue": {
+      "label": "場地",
+      "desc": "七項運動的球場，按小時租用。"
+    },
+    "class": {
+      "label": "課程",
+      "desc": "運動課程、體能訓練課堂及證書課程。"
+    },
+    "pt": {
+      "label": "私人教練",
+      "desc": "選擇你的 Just Performance 教練，再選時段。1對1 至 1對團隊，最多16人。"
+    },
+    "eyebrow": "三種預約方式",
+    "title": "你可以預約的項目"
+  },
+  "price": {
+    "from": "由 HK$ TBC 起",
+    "fromTemplate": "由 {p} 起",
+    "soon": "價格即將公布",
+    "pending": "HK$ 待定"
+  },
+  "intro": {
+    "eyebrow": "Sporting Hub Hong Kong",
+    "title": "一個合適的室內場地，專為香港人真正玩的運動而設。",
+    "body1": "兩個室內球場，一大一小，按你預約的項目佈置。另有 Just Performance 主理的體能訓練區、恢復區、更衣室及儲物櫃，還有小型商店和消夜角落。",
+    "body2": "歡迎所有人使用。可按小時預約球場、參加課程，或帶同全公司一起來玩。",
+    "link": "查看場地"
+  },
+  "spaces": {
+    "eyebrow": "場地",
+    "title": "八個空間，同一個地址。",
+    "volleyball": "排球場",
+    "basketball": "籃球場",
+    "pickleball": "匹克球場",
+    "badminton": "羽毛球場",
+    "sc": "體能訓練區",
+    "lounge": "休息室",
+    "retail": "商店",
+    "recovery": "恢復區"
+  },
+  "jp": {
+    "eyebrow": "私人教練",
+    "title": "Just Performance，就在場內。",
+    "body": "Just Performance 提供體能訓練，設於 Sporting Hub Hong Kong。先選擇教練，再選合適時段。課程人數由1對1至1對團隊（最多16人）。",
+    "cta": "選擇教練",
+    "groupSize": "1對1 至 1對團隊，最多16人",
+    "book": "預約",
+    "coach1": {
+      "name": "總教練",
+      "chip1": "力量",
+      "chip2": "體能"
+    },
+    "coach2": {
+      "name": "體能教練",
+      "chip1": "活動度",
+      "chip2": "復康"
+    },
+    "coach3": {
+      "name": "排球教練",
+      "chip1": "排球",
+      "chip2": "跳躍訓練"
+    },
+    "tbcBio": "姓名及簡介待確認"
+  },
+  "corp": {
+    "eyebrow": "企業活動",
+    "title": "團隊活動日、比賽、私人租場。",
+    "body": "全個場地或單一球場均可。告訴我們日期及人數，我們會提供報價。",
+    "ctaPrimary": "查詢",
+    "wa": "WhatsApp 查詢"
+  },
+  "shop": {
+    "eyebrow": "商店",
+    "title": "鴨舌帽、衞衣、T恤、布袋。",
+    "link": "瀏覽商店",
+    "soon": "即將推出",
+    "tbcName": "商店名稱待確認"
+  },
+  "band": {
+    "title": "預約球場",
+    "sub": "選擇運動項目，然後選擇時段。",
+    "sport": {
+      "vb": "排球",
+      "bb": "籃球",
+      "pb": "匹克球",
+      "bd": "羽毛球"
+    },
+    "classes": "課程",
+    "pt": "私人教練"
+  },
+  "find": {
+    "eyebrow": "尋找我們",
+    "title": "青龍頭，距荃灣 25 分鐘。",
+    "addressLabel": "地址",
+    "addressValue": "新界青龍頭青山公路 100 號 豪景花園商場",
+    "hoursLabel": "開放時間",
+    "hoursValue": "待確認",
+    "transportLabel": "交通",
+    "transportValue": "港鐵荃灣站或荃灣西站，轉九巴 53 或小巴 302，約 25 分鐘。",
+    "parkingLabel": "泊車",
+    "parkingValue": "豪景花園商場設公眾停車場，時租或日租。",
+    "waLabel": "WhatsApp",
+    "waValue": "+852 5584 9706",
+    "emailLabel": "電郵",
+    "emailValue": "info@asportinghub.com",
+    "waBtn": "WhatsApp 查詢",
+    "directionsBtn": "查看路線",
+    "mapCaption": "地圖將於地址確認後嵌入",
+    "mapTitle": "青龍頭豪景花園地圖",
+    "illustration_alt": "香港天際線插畫，展示山巒、高樓及渡輪"
+  },
+  "footer": {
+    "blurb": "香港室內運動場地。球場、課程、教練及裝備。",
+    "bookCol": "預約",
+    "venueCol": "場地",
+    "companyCol": "公司",
+    "linkVenue": "場地",
+    "linkClass": "課程",
+    "linkPt": "私人教練",
+    "linkService": "我們的服務",
+    "linkTeam": "我們的團隊",
+    "linkCorporate": "企業活動",
+    "linkMedia": "媒體",
+    "linkShop": "商店",
+    "linkContact": "聯絡我們",
+    "linkPrivacy": "私隱保護政策",
+    "linkTerms": "場地細則與條款",
+    "linkRefund": "退款及取消預訂政策",
+    "bottomName": "Sporting Hub Hong Kong"
+  },
+  "wa": {
+    "ariaLabel": "WhatsApp 查詢",
+    "tbcNumber": "號碼待確認",
+    "prefillGeneral": "你好，我有一個關於 Sporting Hub Hong Kong 的問題。",
+    "prefillCorporate": "你好，我想索取企業活動租場報價。",
+    "prefillBook": "你好，我想預約球場。",
+    "prefillCourt": "你好，我想預約球場，運動項目：{sport}",
+    "prefillClass": "你好，我想查詢課程。",
+    "prefillPt": "你好，我想查詢 Just Performance 的私人教練服務。"
+  },
+  "bk": {
+    "wa_aria": "WhatsApp 查詢",
+    "back": "返回",
+    "next": "下一步",
+    "pay": "確認並付款",
+    "s1_h": "選擇運動",
+    "s1_sub": "選擇運動。下一步選一小時或連續兩小時，每個香港身份證每日最多 2 小時。",
+    "s1c_h": "選擇課程類型",
+    "s1c_sub": "運動、體能訓練及證書課程共用一個日曆。",
+    "s5_h": "選擇你的教練",
+    "s5_sub": "Just Performance 私人教練。選擇教練，然後查看其日曆。",
+    "s5b_h": "選擇教練比例",
+    "s5b_sub": "教練對學員的比例，每種收費不同。",
+    "s3_h": "選擇課堂",
+    "s2_h": "選擇日期和時間",
+    "s2_note": "點選開始時間。如需 2 小時，請同時點選緊接前或後的一小時。",
+    "s6_h": "你的資料",
+    "s6_sub": "確認訊息將發送到此。",
+    "s6_warn": "請填寫姓名、電郵及電話，並接受免責聲明。",
+    "f_first": "名字",
+    "f_last": "姓氏",
+    "f_email": "電郵",
+    "f_phone": "電話",
+    "f_notes": "有什麼需要我們知道",
+    "f_notes_ph": "傷患、器材、到達時間",
+    "c_waiv": "我同意服務條款政策",
+    "c_mkt": "間中發送課程及活動資訊給我。",
+    "s7_h": "核對並確認",
+    "s7_sub": "此為原型，無實際收費。",
+    "s8_h": "預約成功",
+    "s8_sub": "確認電郵已發送至您的郵箱。",
+    "s8_home": "返回首頁",
+    "s8_again": "預約其他",
+    "sum_h": "你的預約",
+    "sum_total": "合計",
+    "policy": "已付費用概不退還，亦不可轉讓。例外情況：預訂時段前 2 小時內發出八號或以上熱帶氣旋警告信號或黑色暴雨警告信號，或由本公司取消預訂。",
+    "policy_link": "查看退款及取消預訂政策",
+    "cr_l": "後台變更請求",
+    "cr_cat": "此類別步驟位於標準Bliss流程之前。請與Edward確認可否在不影響其他Bliss客戶的情況下加入。",
+    "cr_coach": "Bliss的流程是商店、日期、時間、項目。此處先選教練。請與Edward確認。後備方案：日期優先，並設教練篩選。",
+    "cr_pay": "付款沿用現有Bliss的結帳及付款渠道。此處無新增項目。",
+    "st_court": "球場",
+    "st_cat": "課程類型",
+    "st_coach": "教練",
+    "st_size": "比例",
+    "st_when": "日期及時間",
+    "st_session": "時段",
+    "st_you": "詳情",
+    "st_pay": "確認",
+    "l_court": "球場",
+    "l_class": "課程",
+    "l_coach": "教練",
+    "l_size": "人數",
+    "l_when": "時間",
+    "l_dur": "時長",
+    "l_none": "尚未選擇",
+    "mins": "分鐘",
+    "spots": "剩餘名額",
+    "hall": "場館",
+    "ref": "參考編號",
+    "wa_prefill": "你好，我想查詢預約的問題。",
+    "coach_tbc": "名稱待確認",
+    "filter_all": "全部",
+    "filter_aria": "按專長篩選教練",
+    "s8_gcal": "加入 Google 日曆",
+    "s8_ics": "加入 Apple 日曆 (.ics)",
+    "cal_pt": "私人教練",
+    "cr_cal": "Bliss 後台會渲染確認頁面，因此在其上添加「加入日曆」按鈕屬於變更請求。請與 Edward 確認。",
+    "qty_l": "小時",
+    "qty_less": "減少小時",
+    "qty_more": "增加小時",
+    "cr_qty": "每日每個身份證最多 2 小時，須為連續時段（Siu，2026-10-04）。連續時段由頁面檢查；每日上限需要後台知道該身份證已預約的時段。請與 Edward 確認。",
+    "f_hkid": "身份證號碼，首4位字符",
+    "f_hkid_ph": "A123",
+    "f_dob": "出生日期",
+    "f_gender": "性別",
+    "g_female": "女",
+    "g_male": "男",
+    "g_other": "不願透露",
+    "f_hear": "你從哪裡得知我們？",
+    "h_friend": "朋友介紹",
+    "h_social": "社交媒體",
+    "h_search": "網上搜尋",
+    "h_walk": "經過場地",
+    "h_other": "其他地方",
+    "f_select": "請選擇",
+    "tc_link": "服務條款政策",
+    "l_term": "學期",
+    "l_weekday": "星期",
+    "l_lessons": "堂數",
+    "lessons_n": "堂",
+    "s3_day_h": "選擇星期",
+    "s3_date_h": "選擇日期",
+    "dow_mon": "週一",
+    "dow_tue": "週二",
+    "dow_wed": "週三",
+    "dow_thu": "週四",
+    "dow_fri": "週五",
+    "dow_sat": "週六",
+    "dow_sun": "週日",
+    "sport_all": "所有運動",
+    "l_ratio": "比例",
+    "ratio_team": "團隊",
+    "ratio_team_d": "最多16位運動員由一位教練指導。",
+    "l_coaching": "教練費",
+    "l_courtfee": "球場費用",
+    "cr_split": "收據會將教練服務及球場租用分項列出，並於同一筆交易收取。請與 Edward 確認。",
+    "cr_eva": "訓練課程報名應完全複製 EVA 的會員登記問題（客戶，2026-09-24）。由於未收到 EVA 的欄位清單，此表格維持不變，有待提供。",
+    "rate_range": "{off} 至 {peak} / 小時",
+    "rate_from": "由 {p} 起 / 小時",
+    "one_class": "每次預約只限一堂課，按堂付費。",
+    "one_pt": "教練對學員的比例。每次預約只限一堂，每堂一小時。",
+    "night_h": "深夜時段，23:00 至 07:00",
+    "night_sub": "由 {d1} 深夜至 {d2}。憑預約附帶的二維碼開門。",
+    "next_day": "翌日",
+    "time_to": "至",
+    "qr_h": "你的入場二維碼",
+    "qr_valid": "此二維碼可於 {from} 至 {to} 開門。",
+    "qr_group": "一個二維碼可供全組人入場。",
+    "qr_shot": "請即截圖此頁。我們不會以電郵發送二維碼。",
+    "qr_sample": "示範二維碼",
+    "checkin_desk": "請於接待處出示香港身份證登記。",
+    "cr_qr": "任何預約如涵蓋 23:00 至 07:00，二維碼會顯示於此頁，而非在電郵中（2026-10-10 通話）。二維碼由 Bliss 後台產生。每個預約有一個二維碼，供全組使用，只在預約開始至結束期間可開門，包括午夜之後。尚未決定：深夜時段的預約應計入哪一天，以計算每日 2 小時上限。請與 Edward 確認。",
+    "unit_hour": "小時",
+    "unit_session": "堂",
+    "unit_person": "每位",
+    "unit_class": "堂",
+    "no_classes": "此篩選沒有課堂。"
+  },
+  "court": {
+    "vb": {
+      "name": "排球場",
+      "hall": "A場館"
+    },
+    "bb": {
+      "name": "籃球場",
+      "hall": "A場館"
+    },
+    "pb": {
+      "name": "匹克球場",
+      "hall": "B場館"
+    },
+    "bd": {
+      "name": "羽毛球場",
+      "hall": "B場館"
+    },
+    "fb": {
+      "name": "軟式曲棍球場",
+      "hall": "場館 A"
+    },
+    "db": {
+      "name": "躲避球場",
+      "hall": "場館 B"
+    },
+    "tq": {
+      "name": "Teqvoly 球場",
+      "hall": "場館 B"
+    }
+  },
+  "cat": {
+    "sport": {
+      "name": "運動課程",
+      "desc": "七項球場運動的課程，按年齡及程度分組。"
+    },
+    "sc": {
+      "name": "體能訓練",
+      "desc": "體能訓練場地的小組課程，由 Just Performance 主理。"
+    },
+    "cert": {
+      "name": "證書課程",
+      "desc": "為期數星期的課程，完成後獲發證書。"
+    },
+    "ws": {
+      "name": "工作坊",
+      "desc": "一次性訓練班及短期工作坊，以單次課程預約，而非系列課程。"
+    }
+  },
+  "class": {
+    "c1": {
+      "name": "排球 U12 初班",
+      "desc": "由零開始學發球、傳球及輪轉。"
+    },
+    "c2": {
+      "name": "羽毛球 成人中班",
+      "desc": "為有經驗球手而設的輪換對賽，到場後由我們編排對戰組合。"
+    },
+    "c3": {
+      "name": "成人體能訓練",
+      "desc": "深蹲、髖鉸鏈、推舉及負重行走，由基礎學起槓鈴技巧。"
+    },
+    "c4": {
+      "name": "成人活動恢復",
+      "desc": "在雪橇跑道及人工草地進行雪橇、單車及負重行走訓練，槓鈴留在架上不用。"
+    },
+    "c5": {
+      "name": "排球教練證書 L1",
+      "desc": "為期六星期，完成後設有考核及頒發證書。"
+    },
+    "w1": {
+      "name": "發球及扣球訓練班",
+      "desc": "兩小時訓練，涵蓋跳躍發球、助跑及扣球。需穿球場鞋。"
+    },
+    "w2": {
+      "name": "匹克球入門工作坊",
+      "desc": "教授規則、握拍方式及廚房線，提供球拍。無需經驗。"
+    }
+  },
+  "coach": {
+    "marco": {
+      "name": "總教練",
+      "exp": "8年教練經驗",
+      "tag1": "排球",
+      "tag2": "競賽"
+    },
+    "ken": {
+      "name": "體能教練",
+      "exp": "10年經驗，CSCS",
+      "tag1": "力量",
+      "tag2": "重返賽場"
+    },
+    "elaine": {
+      "name": "初班教練",
+      "exp": "5年教練經驗",
+      "tag1": "初學者",
+      "tag2": "匹克球"
+    },
+    "jojo": {
+      "name": "青年教練",
+      "exp": "4年教練經驗",
+      "tag1": "青年",
+      "tag2": "家庭"
+    }
+  },
+  "size": {
+    "1": {
+      "name": "1對1",
+      "desc": "只有你和教練。"
+    },
+    "2": {
+      "name": "1對2",
+      "desc": "帶個拍檔。"
+    },
+    "3": {
+      "name": "1對3",
+      "desc": "三人同行，一位教練"
+    },
+    "4": {
+      "name": "1對4",
+      "desc": "小組，費用分攤。"
+    },
+    "8": {
+      "name": "1對團隊",
+      "desc": "最多16位學員，由一位教練指導。"
+    }
+  },
+  "tweaks": {
+    "title": "預覽控制",
+    "viewLabel": "檢視",
+    "viewDev": "開發",
+    "viewClient": "客戶"
+  },
+  "sport": {
+    "vb": {
+      "name": "排球"
+    },
+    "bb": {
+      "name": "籃球"
+    },
+    "pb": {
+      "name": "匹克球"
+    },
+    "bd": {
+      "name": "羽毛球"
+    },
+    "fb": {
+      "name": "軟式曲棍球"
+    },
+    "db": {
+      "name": "躲避球"
+    },
+    "tq": {
+      "name": "Teqvoly"
+    },
+    "sc": {
+      "name": "體能訓練"
+    }
+  },
+  "soon": {
+    "band": "網上預約即將開放。選擇運動，即可在 WhatsApp 查詢。",
+    "note1": "網上預約即將開放。",
+    "note2": "開放前請用 WhatsApp 查詢。"
+  },
+  "prices": {
+    "eyebrow": "價目",
+    "title": "球場租用",
+    "lead": "收費以每個球場每小時計算。",
+    "colSport": "運動",
+    "colPeak": "繁忙時段",
+    "colOffpeak": "非繁忙時段",
+    "courtA": "A場 (9m x 18m)",
+    "courtB": "B場 (8m x 16m)",
+    "hours": "繁忙時段為星期一至五 16:00 至 23:00，星期六、日及公眾假期為 07:00 至 23:00；其他時段為非繁忙時段。",
+    "memberTitle": "會籍",
+    "memberBody": "運動課程的一次性入會費，包括會員帳戶及訓練套裝。",
+    "classTitle": "課程及私人教練",
+    "classBody": "即將推出。",
+    "classTbc": "課程及私人教練收費待定",
+    "corpTitle": "企業及私人活動",
+    "corpBody": "此類活動逐個報價，請提供日期及人數。",
+    "pdf": "下載價目表",
+    "pdfTbc": "價目表待球場尺寸確定",
+    "courtsNote": "排球及軟式曲棍球按球場收費，其他項目則使用有空餘的球場。"
+  },
+  "terms": {
+    "title": "條款與政策",
+    "lead": "以下為預訂及使用 Sporting Hub Hong Kong 服務的條款、我們處理個人資料的方式，以及退款及取消預訂政策。",
+    "updated": "最後更新：2026年10月23日",
+    "toc": "本頁內容",
+    "contactLead": "如對以上條款有任何疑問，或需查閱及更正本公司所持有的個人資料，請與我們聯絡。",
+    "back": "返回主頁"
+  },
+  "brand": {
+    "name": "Sporting Hub Hong Kong"
+  },
+  "meta": {
+    "home": {
+      "title": "Sporting Hub Hong Kong｜香港室內運動場地",
+      "description": "位於香港青龍頭的室內運動場地，提供排球、籃球、匹克球、軟式曲棍球、Teqvoly、躲避球及羽毛球場地時租，以及運動課堂和 Just Performance 私人訓練。"
+    },
+    "booking": {
+      "title": "預訂｜Sporting Hub Hong Kong",
+      "description": "預訂 Sporting Hub Hong Kong 運動場地、課堂或私人訓練。"
+    },
+    "comingSoon": {
+      "title": "Sporting Hub Hong Kong，2026 年 12 月開幕",
+      "description": "Sporting Hub Hong Kong 將於 2026 年 12 月在青龍頭豪景花園開幕，提供場地時租、運動課堂及 Just Performance 私人訓練。歡迎透過 WhatsApp 查詢價格及詳情。"
+    },
+    "terms": {
+      "title": "條款及政策｜Sporting Hub Hong Kong",
+      "description": "Sporting Hub Hong Kong 的服務條款、私隱及退款政策。"
+    }
+  }
+}

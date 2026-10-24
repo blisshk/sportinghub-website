@@ -1,0 +1,513 @@
+{
+  "nav": {
+    "home": "Home",
+    "service": "Our Service",
+    "shop": "Shop",
+    "team": "Our Team",
+    "corporate": "Corporate Event",
+    "media": "Media",
+    "contact": "Contact Us",
+    "menu_aria": "Menu",
+    "lang_aria": "Language",
+    "shopTbc": "Store link to confirm",
+    "mediaTbc": "Page in the next pass",
+    "closeAria": "Close",
+    "home_aria": "Sporting Hub Hong Kong, home"
+  },
+  "cta": {
+    "book": "Book a court",
+    "classes": "See classes"
+  },
+  "hero": {
+    "eyebrow": "Opening December 2026",
+    "lead": "Court sports, coaching and recovery, in one place in Hong Kong.",
+    "photos_aria": "Venue photos",
+    "previous_aria": "Previous photo",
+    "next_aria": "Next photo",
+    "slide_aria": "Slide {n}",
+    "carousel_role": "carousel"
+  },
+  "pillar": {
+    "venue": {
+      "label": "Venue",
+      "desc": "Courts by the hour for seven sports."
+    },
+    "class": {
+      "label": "Class",
+      "desc": "Sport classes, S&C sessions and certificate courses."
+    },
+    "pt": {
+      "label": "Personal training",
+      "desc": "Pick your Just Performance coach, then a time. 1:1 to 1:Team, up to 16."
+    },
+    "eyebrow": "Three ways to book",
+    "title": "What you can book"
+  },
+  "price": {
+    "from": "from HK$ TBC",
+    "fromTemplate": "from {p}",
+    "soon": "Prices coming soon",
+    "pending": "HK$ TBC"
+  },
+  "intro": {
+    "eyebrow": "Sporting Hub Hong Kong",
+    "title": "A proper indoor venue, built for the sports Hong Kong actually plays.",
+    "body1": "Two indoor courts, one larger and one smaller, set up for whichever sport you book. There is also a strength and conditioning floor run by Just Performance, a recovery zone, changing rooms and lockers, and a small shop and supper corner.",
+    "body2": "Open to everyone. Book by the hour, join a class, or bring the whole office.",
+    "link": "See the venue"
+  },
+  "spaces": {
+    "eyebrow": "The venue",
+    "title": "Eight spaces, one address.",
+    "volleyball": "Volleyball court",
+    "basketball": "Basketball court",
+    "pickleball": "Pickleball court",
+    "badminton": "Badminton court",
+    "sc": "Strength and conditioning floor",
+    "lounge": "Lounge",
+    "retail": "Shop",
+    "recovery": "Recovery zone"
+  },
+  "jp": {
+    "eyebrow": "Personal training",
+    "title": "Just Performance, in the building.",
+    "body": "Strength and conditioning by Just Performance, based here at Sporting Hub Hong Kong. Choose your coach first, then a time that suits you. Sessions run 1:1 to 1:Team, up to 16.",
+    "cta": "Choose a coach",
+    "groupSize": "1:1 to 1:Team, up to 16",
+    "book": "Book",
+    "coach1": {
+      "name": "Head coach",
+      "chip1": "Strength",
+      "chip2": "Conditioning"
+    },
+    "coach2": {
+      "name": "S&C coach",
+      "chip1": "Mobility",
+      "chip2": "Rehab"
+    },
+    "coach3": {
+      "name": "Volleyball coach",
+      "chip1": "Volleyball",
+      "chip2": "Jump training"
+    },
+    "tbcBio": "Name and bio to confirm"
+  },
+  "corp": {
+    "eyebrow": "Corporate events",
+    "title": "Team days, tournaments, private hire.",
+    "body": "The whole venue or a single court. Tell us the date and headcount and we will come back with a quote.",
+    "ctaPrimary": "Enquire",
+    "wa": "WhatsApp"
+  },
+  "shop": {
+    "eyebrow": "Shop",
+    "title": "Caps, hoodies, tees, totes.",
+    "link": "Visit the shop",
+    "soon": "Coming soon",
+    "tbcName": "Store name to confirm"
+  },
+  "band": {
+    "title": "Book a court",
+    "sub": "Pick the sport, then the hour.",
+    "sport": {
+      "vb": "Volleyball",
+      "bb": "Basketball",
+      "pb": "Pickleball",
+      "bd": "Badminton"
+    },
+    "classes": "Classes",
+    "pt": "Personal training"
+  },
+  "find": {
+    "eyebrow": "Find us",
+    "title": "In Tsing Lung Tau, 25 minutes from Tsuen Wan.",
+    "addressLabel": "Address",
+    "addressValue": "Hong Kong Garden shopping arcade, 100 Castle Peak Road, Tsing Lung Tau, N.T.",
+    "hoursLabel": "Opening hours",
+    "hoursValue": "To confirm",
+    "transportLabel": "Getting there",
+    "transportValue": "MTR Tsuen Wan or Tsuen Wan West, then KMB bus 53 or minibus 302, about 25 minutes.",
+    "parkingLabel": "Parking",
+    "parkingValue": "Public car park at Hong Kong Garden shopping arcade, hourly or daily.",
+    "waLabel": "WhatsApp",
+    "waValue": "+852 5584 9706",
+    "emailLabel": "Email",
+    "emailValue": "info@asportinghub.com",
+    "waBtn": "WhatsApp us",
+    "directionsBtn": "Get directions",
+    "mapCaption": "Map embeds once the address is confirmed",
+    "mapTitle": "Map of Hong Kong Garden, Tsing Lung Tau",
+    "illustration_alt": "Hong Kong skyline with mountains, towers and a ferry"
+  },
+  "footer": {
+    "blurb": "An indoor sports venue in Hong Kong. Courts, classes, coaching and kit.",
+    "bookCol": "Book",
+    "venueCol": "Venue",
+    "companyCol": "Company",
+    "linkVenue": "Venue",
+    "linkClass": "Class",
+    "linkPt": "Personal training",
+    "linkService": "Our Service",
+    "linkTeam": "Our Team",
+    "linkCorporate": "Corporate Event",
+    "linkMedia": "Media",
+    "linkShop": "Shop",
+    "linkContact": "Contact Us",
+    "linkPrivacy": "Privacy policy",
+    "linkTerms": "Terms and conditions",
+    "linkRefund": "Refund policy",
+    "bottomName": "Sporting Hub Hong Kong"
+  },
+  "wa": {
+    "ariaLabel": "Message us on WhatsApp",
+    "tbcNumber": "Number to confirm",
+    "prefillGeneral": "Hi, I have a question about Sporting Hub Hong Kong.",
+    "prefillCorporate": "Hi, I would like a corporate hire quote.",
+    "prefillBook": "Hi, I would like to book a court.",
+    "prefillCourt": "Hi, I would like to book a court. Sport: {sport}",
+    "prefillClass": "Hi, I would like to ask about classes.",
+    "prefillPt": "Hi, I would like to ask about personal training with Just Performance."
+  },
+  "bk": {
+    "wa_aria": "Ask a question on WhatsApp",
+    "back": "Back",
+    "next": "Next",
+    "pay": "Confirm and pay",
+    "s1_h": "Which sport?",
+    "s1_sub": "Pick your sport. Next, choose one hour or two in a row, up to 2 hours per HKID a day.",
+    "s1c_h": "What kind of class?",
+    "s1c_sub": "Sport, strength and conditioning, and certificates share one calendar.",
+    "s5_h": "Choose your coach",
+    "s5_sub": "Personal training by Just Performance. Pick the coach, then their calendar.",
+    "s5b_h": "Which ratio?",
+    "s5b_sub": "Coach to athlete. Each ratio is priced differently.",
+    "s3_h": "Pick a session",
+    "s2_h": "Pick a date and time",
+    "s2_note": "Tap a start time. For two hours, also tap the hour just before or after it.",
+    "s6_h": "Your details",
+    "s6_sub": "We send the confirmation here.",
+    "s6_warn": "Fill in your name, email and phone, and accept the waiver.",
+    "f_first": "First name",
+    "f_last": "Last name",
+    "f_email": "Email",
+    "f_phone": "Phone",
+    "f_notes": "Anything we should know",
+    "f_notes_ph": "Injuries, equipment, arrival time",
+    "c_waiv": "I agree to the Terms of Service Policy",
+    "c_mkt": "Send me occasional news about classes and events.",
+    "s7_h": "Check and confirm",
+    "s7_sub": "Nothing is charged in this prototype.",
+    "s8_h": "You are booked",
+    "s8_sub": "A confirmation is on its way to your email.",
+    "s8_home": "Back to home",
+    "s8_again": "Book something else",
+    "sum_h": "Your booking",
+    "sum_total": "Total",
+    "policy": "Paid bookings are non-refundable and non-transferable. Exceptions: Typhoon Signal No. 8 or higher, or a Black Rainstorm Warning, issued within 2 hours before your slot; or a cancellation by us.",
+    "policy_link": "Read the refund policy",
+    "cr_l": "Backend change request",
+    "cr_cat": "This category step sits ahead of the standard Bliss flow. Confirm with Edward that it can be added without affecting other Bliss clients.",
+    "cr_coach": "Bliss goes store, then date, then time, then item. This picks the coach first. Confirm with Edward. Fallback: date first with a coach filter.",
+    "cr_pay": "Payment runs on the existing Bliss checkout and payment channel. Nothing new is built here.",
+    "st_court": "Court",
+    "st_cat": "Class type",
+    "st_coach": "Coach",
+    "st_size": "Ratio",
+    "st_when": "Date and time",
+    "st_session": "Session",
+    "st_you": "Details",
+    "st_pay": "Confirm",
+    "l_court": "Court",
+    "l_class": "Class",
+    "l_coach": "Coach",
+    "l_size": "Group size",
+    "l_when": "When",
+    "l_dur": "Duration",
+    "l_none": "Not chosen yet",
+    "mins": "min",
+    "spots": "spots left",
+    "hall": "Hall",
+    "ref": "Reference",
+    "wa_prefill": "Hi, I have a question about a booking.",
+    "coach_tbc": "name to confirm",
+    "filter_all": "All",
+    "filter_aria": "Filter coaches by specialty",
+    "s8_gcal": "Add to Google Calendar",
+    "s8_ics": "Add to Apple Calendar (.ics)",
+    "cal_pt": "Personal training",
+    "cr_cal": "The Bliss backend renders the confirmation page, so an add to calendar button on it is a change request. Confirm with Edward.",
+    "qty_l": "Hours",
+    "qty_less": "Fewer hours",
+    "qty_more": "More hours",
+    "cr_qty": "Up to 2 hours a day per HKID, in one continuous block (Siu, 2026-10-04). The page enforces the continuous block; the daily cap needs the backend to know what that HKID already booked. Confirm with Edward.",
+    "f_hkid": "HKID, first 4 characters",
+    "f_hkid_ph": "A123",
+    "f_dob": "Date of birth",
+    "f_gender": "Gender",
+    "g_female": "Female",
+    "g_male": "Male",
+    "g_other": "Prefer not to say",
+    "f_hear": "How did you hear about us?",
+    "h_friend": "From a friend",
+    "h_social": "Social media",
+    "h_search": "Web search",
+    "h_walk": "Walked past the venue",
+    "h_other": "Somewhere else",
+    "f_select": "Please choose",
+    "tc_link": "Terms of Service Policy",
+    "l_term": "Term",
+    "l_weekday": "Day",
+    "l_lessons": "Lessons",
+    "lessons_n": "lessons",
+    "s3_day_h": "Which day?",
+    "s3_date_h": "Which date?",
+    "dow_mon": "Mon",
+    "dow_tue": "Tue",
+    "dow_wed": "Wed",
+    "dow_thu": "Thu",
+    "dow_fri": "Fri",
+    "dow_sat": "Sat",
+    "dow_sun": "Sun",
+    "sport_all": "All sports",
+    "l_ratio": "Ratio",
+    "ratio_team": "Team",
+    "ratio_team_d": "Up to 16 athletes with one coach.",
+    "l_coaching": "Coaching",
+    "l_courtfee": "Court fee",
+    "cr_split": "The receipt itemises coaching and court hire as separate lines, charged in one transaction. Confirm with Edward.",
+    "cr_eva": "Training class registration should copy EVA's member registration questions exactly (client, 2026-09-24). Nobody has supplied EVA's field list, so this form is unchanged pending it.",
+    "rate_range": "{off} to {peak} / hour",
+    "rate_from": "from {p} / hour",
+    "one_class": "Each booking is for one class only, paid per class.",
+    "one_pt": "Coach to athlete. Each booking is for one session of one hour.",
+    "night_h": "Overnight, 23:00 to 07:00",
+    "night_sub": "Night of {d1} into {d2}. The door opens with a QR code that comes with your booking.",
+    "next_day": "next day",
+    "time_to": "to",
+    "qr_h": "Your entry QR code",
+    "qr_valid": "The code opens the door from {from} to {to}.",
+    "qr_group": "One code lets your whole group in.",
+    "qr_shot": "Screenshot this page now. We don't email the code.",
+    "qr_sample": "Sample code",
+    "checkin_desk": "Check in at the front desk with your HKID.",
+    "cr_qr": "Any booking that runs into 23:00 to 07:00 shows a QR code on this page instead of in the email (call, 2026-10-10). The Bliss backend generates the code. Each booking gets one code for the whole group, and it opens the door only between the booking's start and end, including after midnight. Not yet decided: which day a night booking counts toward for the 2-hour daily cap. Confirm with Edward.",
+    "unit_hour": "hour",
+    "unit_session": "session",
+    "unit_person": "person",
+    "unit_class": "class",
+    "no_classes": "No classes match this filter."
+  },
+  "court": {
+    "vb": {
+      "name": "Volleyball Court",
+      "hall": "Hall A"
+    },
+    "bb": {
+      "name": "Basketball Court",
+      "hall": "Hall A"
+    },
+    "pb": {
+      "name": "Pickleball Court",
+      "hall": "Hall B"
+    },
+    "bd": {
+      "name": "Badminton Court",
+      "hall": "Hall B"
+    },
+    "fb": {
+      "name": "Floorball Court",
+      "hall": "Hall A"
+    },
+    "db": {
+      "name": "Dodgeball Court",
+      "hall": "Hall B"
+    },
+    "tq": {
+      "name": "Teqvoly Court",
+      "hall": "Hall B"
+    }
+  },
+  "cat": {
+    "sport": {
+      "name": "Sport classes",
+      "desc": "Classes in all seven court sports, grouped by age and level."
+    },
+    "sc": {
+      "name": "Strength and conditioning",
+      "desc": "Group S and C sessions on the strength floor, run by Just Performance."
+    },
+    "cert": {
+      "name": "Certificate courses",
+      "desc": "Multi-week courses that end in a certificate."
+    },
+    "ws": {
+      "name": "Workshop",
+      "desc": "One-off clinics and short workshops, booked as a single session rather than a series."
+    }
+  },
+  "class": {
+    "c1": {
+      "name": "Volleyball, U12 Beginner",
+      "desc": "Serving, passing and rotation from zero."
+    },
+    "c2": {
+      "name": "Badminton, Adult Intermediate",
+      "desc": "Rotating games for confident players. We sort the sides when you arrive."
+    },
+    "c3": {
+      "name": "Strength and conditioning, Adult",
+      "desc": "Squat, hinge, press and carry. Barbell technique from the floor up."
+    },
+    "c4": {
+      "name": "Mobility and recovery, Adult",
+      "desc": "Sled, bike and carries on the sled lane and turf. The barbell stays racked."
+    },
+    "c5": {
+      "name": "Volleyball coaching certificate, Level 1",
+      "desc": "Six weeks, with an assessment and a certificate at the end."
+    },
+    "w1": {
+      "name": "Serve and spike clinic",
+      "desc": "Two hours on the jump serve, the approach and the spike. Court shoes needed."
+    },
+    "w2": {
+      "name": "Pickleball introduction workshop",
+      "desc": "Rules, grip and the kitchen line, with paddles provided. No experience needed."
+    }
+  },
+  "coach": {
+    "marco": {
+      "name": "Head coach",
+      "exp": "8 years coaching",
+      "tag1": "Volleyball",
+      "tag2": "Competition"
+    },
+    "ken": {
+      "name": "S&C coach",
+      "exp": "10 years, CSCS",
+      "tag1": "Strength",
+      "tag2": "Return to play"
+    },
+    "elaine": {
+      "name": "Beginner coach",
+      "exp": "5 years coaching",
+      "tag1": "Beginner",
+      "tag2": "Pickleball"
+    },
+    "jojo": {
+      "name": "Youth coach",
+      "exp": "4 years coaching",
+      "tag1": "Youth",
+      "tag2": "Family"
+    }
+  },
+  "size": {
+    "1": {
+      "name": "1 to 1",
+      "desc": "Just you and the coach."
+    },
+    "2": {
+      "name": "1 to 2",
+      "desc": "Bring a partner."
+    },
+    "3": {
+      "name": "1 to 3",
+      "desc": "Three of you, one coach."
+    },
+    "4": {
+      "name": "1 to 4",
+      "desc": "Small group, shared rate."
+    },
+    "8": {
+      "name": "1 to Team",
+      "desc": "Up to 16 athletes with one coach."
+    }
+  },
+  "tweaks": {
+    "title": "Preview controls",
+    "viewLabel": "View",
+    "viewDev": "Dev",
+    "viewClient": "Client"
+  },
+  "sport": {
+    "vb": {
+      "name": "Volleyball"
+    },
+    "bb": {
+      "name": "Basketball"
+    },
+    "pb": {
+      "name": "Pickleball"
+    },
+    "bd": {
+      "name": "Badminton"
+    },
+    "fb": {
+      "name": "Floorball"
+    },
+    "db": {
+      "name": "Dodgeball"
+    },
+    "tq": {
+      "name": "Teqvoly"
+    },
+    "sc": {
+      "name": "S&C"
+    }
+  },
+  "soon": {
+    "band": "Online booking opens soon. Pick a sport to ask about it on WhatsApp.",
+    "note1": "Online booking opens soon.",
+    "note2": "Until then, message us on WhatsApp."
+  },
+  "prices": {
+    "eyebrow": "Prices",
+    "title": "Court hire",
+    "lead": "Rates per court, per hour.",
+    "colSport": "Sport",
+    "colPeak": "Peak",
+    "colOffpeak": "Non-peak",
+    "courtA": "Court A (9m x 18m)",
+    "courtB": "Court B (8m x 16m)",
+    "hours": "Peak hours are 16:00 to 23:00 Monday to Friday, and 07:00 to 23:00 on Saturdays, Sundays and public holidays. All other hours are non-peak.",
+    "memberTitle": "Membership",
+    "memberBody": "A one-off joining fee for sport classes. It covers your member account and a training kit.",
+    "classTitle": "Classes and personal training",
+    "classBody": "Coming soon.",
+    "classTbc": "Class and PT prices to confirm",
+    "corpTitle": "Corporate and private events",
+    "corpBody": "We quote these case by case. Send us your date and group size.",
+    "pdf": "Download price list",
+    "pdfTbc": "Rate card waits on court sizes",
+    "courtsNote": "Volleyball and floorball are priced by court. Other sports go on whichever court is free."
+  },
+  "terms": {
+    "title": "Terms and policies",
+    "lead": "These are the terms for booking and using Sporting Hub Hong Kong, how we handle your personal data, and our refund and cancellation policy.",
+    "updated": "Last updated 23 October 2026",
+    "toc": "On this page",
+    "contactLead": "If you have questions about these terms, or want to see or correct the personal data we hold about you, contact us.",
+    "back": "Back to home"
+  },
+  "brand": {
+    "name": "Sporting Hub Hong Kong"
+  },
+  "meta": {
+    "home": {
+      "title": "Sporting Hub Hong Kong",
+      "description": "An indoor sports venue in Hong Kong. Courts by the hour for volleyball, basketball, pickleball, floorball, Teqvoly, dodgeball and badminton, plus classes and Just Performance coaching."
+    },
+    "booking": {
+      "title": "Book | Sporting Hub Hong Kong",
+      "description": "Book a court, class or personal training session at Sporting Hub Hong Kong."
+    },
+    "comingSoon": {
+      "title": "Sporting Hub Hong Kong, opening December 2026",
+      "description": "Sporting Hub Hong Kong opens in December 2026 at Hong Kong Garden, Tsing Lung Tau. Courts by the hour, classes and Just Performance coaching. Prices and enquiries on WhatsApp."
+    },
+    "terms": {
+      "title": "Terms & Policies | Sporting Hub Hong Kong",
+      "description": "Terms of service, privacy and refund policies for Sporting Hub Hong Kong."
+    }
+  }
+}

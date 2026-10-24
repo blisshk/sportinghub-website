@@ -1,0 +1,133 @@
+@layer theme, base, components, utilities;
+
+/* Keep the original reset while adding Tailwind's theme and utilities.
+   Preflight's extra heading, form and list resets would change this site. */
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "../styles/tokens.css" layer(base);
+@import "../styles/site.css" layer(components);
+@import "../styles/booking.css" layer(components);
+
+@theme inline {
+  --color-court-cream: var(--court-cream);
+  --color-raised-cream: var(--raised-cream);
+  --color-sideline-navy: var(--sideline-navy);
+  --color-deep-navy: var(--deep-navy);
+  --color-charcoal: var(--charcoal);
+  --color-court-line-blue: var(--court-line-blue);
+  --color-court-ink: var(--court-ink);
+  --color-leather-rust: var(--leather-rust);
+  --color-meta-grey: var(--meta-grey);
+  --color-hairline: var(--hairline);
+  --color-cool-panel: var(--cool-panel);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-err: var(--err);
+  --color-wa-green: var(--wa-green);
+  --color-hairline-on-navy: var(--hairline-on-navy);
+
+  --font-display: var(--f-display);
+  --font-body: var(--f-body);
+  --font-garnish: var(--f-garnish);
+  --font-serif: var(--f-serif);
+
+  --text-hero: var(--fs-hero);
+  --text-section: var(--fs-section);
+  --text-tile: var(--fs-tile);
+  --text-lead: var(--fs-lead);
+  --text-body: var(--fs-body);
+  --text-ui: var(--fs-ui);
+  --text-meta: var(--fs-meta);
+  --text-eyebrow: var(--fs-eyebrow);
+
+  --radius-pill: var(--r-pill);
+  --radius-input: var(--r-input);
+  --radius-card: var(--r-card);
+  --radius-tile: var(--r-tile);
+  --radius-panel: var(--r-panel);
+  --radius-hero: var(--r-hero);
+  --radius-arch: var(--r-arch);
+
+  --shadow-card: var(--shadow-float);
+  --shadow-bar: var(--shadow-sticky);
+  --ease-site: var(--ease);
+
+  --spacing-gutter: var(--gut);
+  --spacing-section: var(--section-gap);
+  --spacing-card: var(--card-pad);
+  --container-wrap: var(--wrap);
+  --container-copy: var(--text-col);
+}
+
+@theme {
+  --breakpoint-*: initial;
+  --breakpoint-tablet: 760px;
+  --breakpoint-desktop: 1000px;
+  --breakpoint-wide: 1100px;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply m-0 bg-court-cream text-charcoal font-body text-body leading-[1.6] antialiased;
+  }
+
+  img {
+    @apply max-w-full block;
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  ul {
+    @apply m-0 p-0 list-none;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+
+  svg {
+    @apply block;
+  }
+
+  p {
+    margin: 0 0 14px;
+  }
+
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply m-0 font-display text-deep-navy;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--sideline-navy);
+    outline-offset: 2px;
+  }
+}

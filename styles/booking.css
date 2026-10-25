@@ -222,6 +222,21 @@ body.in-checkout :where(.bk-body) .wa-float {
 :where(.bk-body) .screen {
   @apply hidden;
 }
+:where(.bk-body).is-payment-step .bk .in {
+  grid-template-columns: minmax(0, 1fr);
+}
+:where(.bk-body) #s7 {
+  max-width: 660px;
+}
+:where(.bk-body) .payment-action {
+  display: none;
+  margin-top: 18px;
+}
+@media (min-width: 960px) {
+  :where(.bk-body) .payment-action {
+    display: inline-flex;
+  }
+}
 :where(.bk-body) .screen.on {
   @apply block;
 }
@@ -544,6 +559,19 @@ html[lang="zh-HK"] :where(.bk-body) .tag {
   margin: 0 0 8px;
   opacity: 0.75;
 }
+:where(.bk-body) .course-schedule {
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+}
+:where(.bk-body) .course-schedule ul {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding-left: 20px;
+  list-style: decimal;
+}
 :where(.bk-body) .chip:disabled {
   opacity: 0.35;
   cursor: default;
@@ -583,6 +611,12 @@ html[lang="zh-HK"] :where(.bk-body) .tag {
 :where(.bk-body) .summary h3 {
   font-size: 17px;
   margin-bottom: 3px;
+}
+:where(.bk-body) aside.summary[hidden] {
+  display: none;
+}
+:where(.bk-body) .payment-summary {
+  position: static;
 }
 :where(.bk-body) .summary .venue {
   font-size: 13.5px;

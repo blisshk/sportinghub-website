@@ -1,6 +1,6 @@
 # Sporting Hub Hong Kong
 
-Next.js App Router site using React, TypeScript and Tailwind CSS v4. The existing venue design, English/Traditional Chinese content and booking demonstration are preserved.
+Next.js App Router site using React, TypeScript and Tailwind CSS v4. The existing venue design, English/Traditional Chinese content and booking layout are preserved. Venue bookings and class enrollments use the Bliss API; personal-training flows use sample data.
 
 ## Development
 
@@ -12,6 +12,12 @@ pnpm dev
 ```
 
 Open http://localhost:3001/en/ for English or http://localhost:3001/zh-HK/ for Hong Kong Chinese. Each locale includes the home, `coming-soon/`, `booking/` and `terms/` pages. Booking accepts the existing `mode=venue|class|pt`, `court` and `t` query parameters. `?view=dev` enables the original review annotations.
+
+Booking steps have separate routes under `/[locale]/booking/`: the root selects a sport/category/coach, `group/` selects a personal-training group, `classes/` selects a class, then `time/`, `details/`, `payment/`, and `confirmation/` cover the remaining steps. The shared booking layout stays mounted as browser history changes. Every step is statically exported, and unprefixed step links redirect to English while preserving their query string.
+
+Venue URLs carry `serviceId`, the resolved backend `roomId`, `date` (`YYYY-MM-DD`), and `time` (one hour or two adjacent comma-separated start times). For example, `/en/booking/details/?mode=venue&serviceId=373&roomId=135&date=2026-10-24&time=23%3A00%2C00%3A00`. `date` is the evening date used by the grid; `00:00`–`06:00` belong to the following day. `court` and `courtSize` retain the website sport/variant. Legacy `t` links still work. Class and training URLs carry their category/class or coach/group selections as well.
+
+Reloads, language switches, and browser back/forward restore and validate these selections. A missing/invalid service, room, date, time, or newly unavailable slot returns the flow to the appropriate selection step. Customer fields and waiver state are held in a two-hour session draft for the same selection, never added to the URL. Venue payment and confirmation routes carry `checkoutId` and restore their authoritative status from the API. A confirmed booking always returns to its receipt, including through browser history. Unpaid holds can be cancelled with Back before payment begins. The guest bearer is held in session storage (memory when storage is blocked), never in a query string. KPay returns it in a URL fragment, which is removed immediately and used to restore the booking. A copied payment URL without that bearer cannot reveal customer details or pay. Class enrollment uses the same deferred confirmation behavior; personal training retains its demonstration payment step.
 
 Translations use `next-intl` with catalogs in `messages/en.json` and `messages/zh-HK.json`. Locale prefixes are required, and the URL determines the language on the server and in the browser. The language links retain the current page, query parameters and section anchor. Unprefixed and original `.html` URLs redirect to English while retaining query parameters and anchors. Both locales are statically generated; locale detection middleware is not needed by the Nginx runtime.
 
@@ -25,6 +31,8 @@ pnpm build
 pnpm test:smoke
 pnpm preview
 ```
+
+To validate an isolated export while a dev server is running, use `SMOKE_OUTPUT_DIR=/absolute/path/to/out pnpm test:smoke`.
 
 The build exports the complete site to `out/`, including both locales, assets, `.nojekyll` and compatibility files for `booking.html`, `coming-soon.html` and `terms.html` at the root and under each locale. Deploy the contents of `out/` to a static host such as GitHub Pages. Set GitHub Pages to deploy a build artifact rather than the source checkout. `pnpm preview` serves the exported site locally on port 3001; set `PORT` to change its port. `next start` is not used with static exports.
 
@@ -59,4 +67,35 @@ The locale pages are then served at `/sportinghub/en/` and `/sportinghub/zh-HK/`
 - `styles/`: brand tokens and Tailwind component styles; custom selectors preserve the original illustrations, responsive layouts and UI states.
 - `public/assets/`: original venue photos, logos and court diagrams.
 
-The booking flow remains a frontend demonstration: availability, payment, booking references and door QR codes are samples. Connecting it to the Bliss API/payment service is a separate integration.
+## Venue backend data
+
+`/booking/?mode=venue` reads the Bliss API in the browser. Set `NEXT_PUBLIC_BOOKING_API_URL` (for example `http://localhost:3003`) before building. For Docker, pass `--build-arg NEXT_PUBLIC_BOOKING_API_URL=https://your-api-host`. The API must allow the website origin via CORS.
+
+For local development, put `NEXT_PUBLIC_BOOKING_API_URL=http://localhost:3003` in `.env.local`, or copy `.env.example` to `.env.local`. Next.js does not load `.env.example` itself. If the dev server does not pick up the change, restart `pnpm dev` and refresh the page.
+
+Edit `lib/venue-mapping.json` to map website courts to backend place services. The tenant is set to **3**. `vb` and `fb` have `A`/`B` variants; `bb`, `pb`, `bd`, `db`, and `tq` use `default`. Each entry only needs a numeric `serviceId`; linked rooms are read from the backend. Null entries are intentionally unavailable; IDs are never inferred from names or list positions. Example: `"A": { "serviceId": 123 }` (replace with actual IDs).
+
+Use `GET /public/place/services?tenantId=3` to find IDs. In the dashboard, enable place bookings on each service, configure its prices and linked rooms, and turn on both frontend visibility and frontend booking. Disabled/deleted services and rooms do not appear. Court A/B may use separate services when they have different prices. Configure shared physical rooms in the dashboard so conflicts are respected; no room IDs belong in the website mapping.
+
+The website loads rates from these services and hours from `GET /public/place/availability?tenantId=3&serviceId=123&date=2026-10-24`. The date is the Hong Kong evening date: hours run from 07:00 through 06:00 the following day. Prices use backend peak schedules and dashboard holidays; availability includes place bookings, service reservations, lessons and room blocks. If a service has multiple linked rooms, an hour is available if any room is free, and a two-hour selection must fit in the same room throughout. Loading/errors disable selection and provide a retry; there is no sample-data fallback. Rebuild after editing the mapping or public environment variables.
+
+Venue steps now use these APIs:
+
+- **Time:** `GET /public/place/quote` rechecks the selected service, room and Hong Kong timestamps, returning the authoritative price and availability.
+- **Details:** `POST /public/place/checkouts` validates contact details and terms, creates the guest link, place booking and unpaid invoice together, and holds the room for 15 minutes. Retries use the same random session token to avoid duplicate bookings. The server rejects changed prices or conflicts without partial records.
+- **Confirmation:** `POST /public/place/checkouts/:id/payment` currently confirms without KPay and returns `checkoutUrl: null`. The invoice keeps the quoted total, $0 received, and the full balance due; the invoice item also has $0 paid. The checkout becomes `Confirmed`, retains its room reservation, and shows the real invoice reference and received/outstanding amounts after refresh. It is not marked paid.
+
+No additional booking fields or tables are required. Customer data uses the backend `User` table. Booking IDs use existing invoice references; guest access and lifecycle use the existing payment `sessionId`/`status`, hold expiry uses invoice `createdAt`, and cancellation uses `cancelledAt`. The API returns no user profile details; receipts use the browser's own contact draft where available. If the superseded invoice online-booking-column migration was already applied, run `prisma/cleanup-online-booking-fields.sql`, regenerate Prisma and restart the API. Current venue confirmation needs no KPay merchant credentials or payment return URL. The existing quoted prices still apply; payment collection is deferred.
+
+Unconfirmed holds expire automatically after 15 minutes. Confirmed bookings keep their room reservation and outstanding invoice. Existing gateway orders from before this change still require server verification and cannot use deferred confirmation to bypass a payment already in progress. No real door-access code or email delivery is provided by this API, so confirmation does not display a demo QR or promise an email. Personal training retains its sample data.
+
+
+## Class enrollment API
+
+`/booking/classes/` (and its locale routes) now loads real tenant-3 course sessions through `GET /public/enrollment/courses`. Backend category IDs drive the category and secondary filters. Course-priced bookings show one card for the entire course with its full price, date range, lesson count and complete schedule. Lesson-priced bookings show individual sessions with a per-lesson price. The page displays actual coaches, rooms and remaining capacity, with retry controls and no demo fallback.
+
+Select a course or lesson to obtain an authoritative quote. A non-null `pricePerCourse` means the entire course; otherwise the backend uses `pricePerLesson`. A full-course booking includes every active scheduled lesson, including earlier dates in an ongoing course, and charges the full course price once. It reserves all lesson seats or none. The details step creates one invoice/item and all real `LessonEnrollment` records atomically, with a 15-minute temporary seat hold. Expiry/cancellation releases every held seat. Courses whose entire schedule has elapsed cannot be purchased. Free prices are supported. The confirmation step keeps the booking, records **$0 received**, and leaves the full invoice balance outstanding; it does not call KPay. Refresh and browser history restore the saved enrollment with its private guest session and real invoice reference.
+
+Single-lesson links carry `lessonId`, `courseId`, `date`, and `time`; full-course links carry `courseId` without `lessonId`, with the first lesson's date/time. `classId` remains a lesson-ID alias. Course receipts list all lessons, and the calendar download includes every lesson; the Google Calendar link adds the first lesson and is labeled accordingly. No customer data or guest bearer is added to query strings. Classes use backend records directly and do not need entries in `venue-mapping.json` beyond the tenant ID already used by the API client.
+
+The class API uses existing invoice/payment/enrollment fields and needs no new schema migration. For installations with the superseded extra online-booking columns, apply `prisma/cleanup-online-booking-fields.sql`, regenerate Prisma, build and restart the API. Use the existing `NEXT_PUBLIC_BOOKING_API_URL` setting. Configure courses with either `pricePerCourse` or `pricePerLesson`, scheduled lessons, active rooms/branches, and participant capacity. Coach assignment is optional for enrollment; once coaches are assigned, their coach-to-student ratio also limits capacity. See `bliss-dashboard-api/prisma/CLASS-ENROLLMENTS.md` for endpoint and hold behavior.

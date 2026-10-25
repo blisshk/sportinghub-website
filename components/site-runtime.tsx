@@ -33,6 +33,7 @@ export function SiteRuntime({
       "has-bar",
       "qr-on",
       "in-checkout",
+      "is-payment-step",
     );
     if (page === "booking") body.classList.add("bk-body", "has-bar");
     else body.classList.add(page === "terms" ? "page-terms" : "page-home");

@@ -50,6 +50,15 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 <span data-str="bk.cr_qty">{t("bk.cr_qty")}</span>
               </div>
               <div className="opts" id="courtList"></div>
+              <p
+                className="meta"
+                id="venueStatus"
+                role="status"
+                aria-live="polite"
+              ></p>
+              <button type="button" id="venueRetry" hidden>
+                {t("bk.venue_retry")}
+              </button>
             </section>
             <section className="screen" id="s1c">
               <h1 data-str="bk.s1c_h">{t("bk.s1c_h")}</h1>
@@ -61,6 +70,8 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 <span data-str="bk.cr_cat">{t("bk.cr_cat")}</span>
               </div>
               <div className="opts" id="catList"></div>
+              <p className="meta" id="categoryStatus" role="status" aria-live="polite"></p>
+              <button type="button" id="categoryRetry" hidden>{t("bk.venue_retry")}</button>
             </section>
             <section className="screen" id="s5">
               <h1 data-str="bk.s5_h">{t("bk.s5_h")}</h1>
@@ -102,12 +113,25 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 <div className="dates" id="dates3"></div>
               </div>
               <div className="opts" id="classList"></div>
+              <section className="course-schedule" id="courseSchedule" hidden aria-live="polite"></section>
+              <p className="meta" id="classStatus" role="status" aria-live="polite"></p>
+              <button type="button" id="classRetry" hidden>{t("bk.venue_retry")}</button>
             </section>
             <section className="screen" id="s2">
               <h1 data-str="bk.s2_h">{t("bk.s2_h")}</h1>
               <p className="sub" id="s2sub"></p>
               <div className="dates" id="dates2"></div>
               <div className="slotgrid" id="slots"></div>
+              <p
+                className="meta"
+                id="slotStatus"
+                role="status"
+                aria-live="polite"
+              ></p>
+              <button type="button" id="slotRetry" hidden>
+                {t("bk.venue_retry")}
+              </button>
+              <p className="meta" id="quoteStatus" role="status" aria-live="polite"></p>
               <p
                 className="meta"
                 style={{ marginTop: "14px" } as CSSProperties}
@@ -265,6 +289,7 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 <p className="warn" id="fWarn" data-str="bk.s6_warn">
                   {t("bk.s6_warn")}
                 </p>
+                <p className="meta" id="detailsStatus" role="status" aria-live="polite"></p>
               </div>
             </section>
             <section className="screen" id="s7">
@@ -273,6 +298,11 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 {t("bk.s7_sub")}
               </p>
               <div id="s7lines"></div>
+              <p className="meta" id="paymentStatus" role="status" aria-live="polite"></p>
+              <button type="button" id="paymentRefresh" hidden>{t("bk.payment_check")}</button>
+              <button type="button" id="paymentNext" className="btn btn-primary payment-action">
+                {t("bk.booking_confirm_button")}
+              </button>
               <div
                 className="cr"
                 style={{ marginTop: "18px" } as CSSProperties}

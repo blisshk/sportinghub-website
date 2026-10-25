@@ -1,0 +1,46 @@
+{
+  "tenantId": 3,
+  "courts": {
+    "vb": {
+      "A": {
+        "serviceId": 373
+      },
+      "B": {
+        "serviceId": 374
+      }
+    },
+    "bb": {
+      "default": {
+        "serviceId": 375
+      }
+    },
+    "pb": {
+      "default": {
+        "serviceId": null
+      }
+    },
+    "bd": {
+      "default": {
+        "serviceId": null
+      }
+    },
+    "fb": {
+      "A": {
+        "serviceId": null
+      },
+      "B": {
+        "serviceId": null
+      }
+    },
+    "db": {
+      "default": {
+        "serviceId": null
+      }
+    },
+    "tq": {
+      "default": {
+        "serviceId": null
+      }
+    }
+  }
+}

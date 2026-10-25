@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BookingPage } from "@/components/booking-page";
 import { isLocale } from "@/i18n/config";
 import { pageMetadata } from "@/i18n/metadata";
 
@@ -13,5 +12,5 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function Page({ params }: Props) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  return <BookingPage locale={locale} />;
+  return null;
 }

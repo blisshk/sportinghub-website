@@ -31,13 +31,27 @@ try {
   process.exit(1);
 }
 
-const fixtureMapping = JSON.parse(
-  await readFile(path.join(root, "lib/venue-mapping.json"), "utf8"),
-);
+const fixtureMapping = {
+  tenantId: 7,
+  courts: Object.fromEntries(
+    ["vb", "bb", "pb", "bd", "fb", "db", "tq"].map((sport) => [
+      sport,
+      Object.fromEntries(
+        (["vb", "fb"].includes(sport) ? ["A", "B"] : ["default"])
+          .map((variant) => [variant, { serviceId: null }]),
+      ),
+    ]),
+  ),
+};
 const fixtureServices = [];
+const fixtureEnv = {
+  "process.env.NEXT_PUBLIC_BOOKING_TENANT_ID": JSON.stringify(String(fixtureMapping.tenantId)),
+};
 for (const [sport, variants] of Object.entries(fixtureMapping.courts)) {
   for (const [variant, link] of Object.entries(variants)) {
     link.serviceId = 100 + fixtureServices.length;
+    const suffix = variant === "default" ? "" : `_${variant}`;
+    fixtureEnv[`process.env.NEXT_PUBLIC_VENUE_${sport.toUpperCase()}${suffix}_SERVICE_ID`] = JSON.stringify(String(link.serviceId));
     const roomId = 200 + fixtureServices.length;
     const off = ["pb", "bd", "tq"].includes(sport)
       ? 290
@@ -86,7 +100,7 @@ function fixtureQuote(request) {
 }
 function fixtureFetch(input, options = {}) {
   const url = new URL(input);
-  assert.equal(url.searchParams.get("tenantId"), "3");
+  assert.equal(url.searchParams.get("tenantId"), String(fixtureMapping.tenantId));
   let data;
   if (url.pathname.includes("/public/enrollment/")) {
     let data;
@@ -185,22 +199,12 @@ const bundled = await build({
   globalName: "SportingHubRuntime",
   write: false,
   define: {
+    ...fixtureEnv,
     "process.env.NEXT_PUBLIC_BASE_PATH": JSON.stringify(basePath),
     "process.env.NEXT_PUBLIC_BOOKING_API_URL": JSON.stringify(
       "https://api.sportinghub.test",
     ),
   },
-  plugins: [
-    {
-      name: "venue-fixture",
-      setup(build) {
-        build.onLoad({ filter: /venue-mapping\.json$/ }, () => ({
-          contents: JSON.stringify(fixtureMapping),
-          loader: "json",
-        }));
-      },
-    },
-  ],
 });
 const clientCode = bundled.outputFiles[0].text;
 const html = Object.fromEntries(

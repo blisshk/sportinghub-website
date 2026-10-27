@@ -28,6 +28,7 @@ ARG NEXT_PUBLIC_VENUE_FB_B_SERVICE_ID=""
 ARG NEXT_PUBLIC_VENUE_DB_SERVICE_ID=""
 ARG NEXT_PUBLIC_VENUE_TQ_SERVICE_ID=""
 ENV NODE_ENV=production \
+    NEXT_OUTPUT=standalone \
     NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH} \
     NEXT_PUBLIC_BOOKING_API_URL=${NEXT_PUBLIC_BOOKING_API_URL} \
     NEXT_PUBLIC_BOOKING_TENANT_ID=${NEXT_PUBLIC_BOOKING_TENANT_ID} \
@@ -42,21 +43,26 @@ ENV NODE_ENV=production \
     NEXT_PUBLIC_VENUE_TQ_SERVICE_ID=${NEXT_PUBLIC_VENUE_TQ_SERVICE_ID} \
     NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
-RUN pnpm build \
-    && mkdir -p "/site${NEXT_PUBLIC_BASE_PATH}" \
-    && cp -a out/. "/site${NEXT_PUBLIC_BASE_PATH}/" \
-    && if [ -n "${NEXT_PUBLIC_BASE_PATH}" ]; then cp out/404.html /site/404.html; fi
+# The package's postbuild hook creates aliases in out/ for static exports only.
+RUN pnpm exec next build --webpack
 
-FROM nginx/nginx-unprivileged:stable-alpine AS production
+FROM node:24-alpine AS production
 
-USER root
-RUN rm -rf /usr/share/nginx/html/*
-COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /site/ /usr/share/nginx/html/
-USER nginx
+WORKDIR /app
+ARG NEXT_PUBLIC_BASE_PATH=""
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    HOSTNAME=0.0.0.0 \
+    PORT=8080 \
+    NEXT_PUBLIC_BASE_PATH=${NEXT_PUBLIC_BASE_PATH}
+
+COPY --from=build --chown=node:node /app/.next/standalone ./
+COPY --from=build --chown=node:node /app/.next/static ./.next/static
+COPY --from=build --chown=node:node /app/public ./public
+USER node
 
 EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+    CMD node -e 'fetch(`http://127.0.0.1:${process.env.PORT}${(process.env.NEXT_PUBLIC_BASE_PATH || "").replace(/\/$/, "")}/en/`, { method: "HEAD", signal: AbortSignal.timeout(2000) }).then(r => process.exit(r.status === 200 ? 0 : 1)).catch(() => process.exit(1))'
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "server.js"]

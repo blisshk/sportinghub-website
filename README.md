@@ -19,7 +19,7 @@ Venue URLs carry `serviceId`, the resolved backend `roomId`, `date` (`YYYY-MM-DD
 
 Reloads, language switches, and browser back/forward restore and validate these selections. A missing/invalid service, room, date, time, or newly unavailable slot returns the flow to the appropriate selection step. Customer fields and waiver state are held in a two-hour session draft for the same selection, never added to the URL. Venue payment and confirmation routes carry `checkoutId` and restore their authoritative status from the API. A confirmed booking always returns to its receipt, including through browser history. Unpaid holds can be cancelled with Back before payment begins. The guest bearer is held in session storage (memory when storage is blocked), never in a query string. KPay returns it in a URL fragment, which is removed immediately and used to restore the booking. A copied payment URL without that bearer cannot reveal customer details or pay. Class enrollment uses the same deferred confirmation behavior; personal training retains its demonstration payment step.
 
-Translations use `next-intl` with catalogs in `messages/en.json` and `messages/zh-HK.json`. Locale prefixes are required, and the URL determines the language on the server and in the browser. The language links retain the current page, query parameters and section anchor. Unprefixed and original `.html` URLs redirect to English while retaining query parameters and anchors. Both locales are statically generated; locale detection middleware is not needed by the Nginx runtime.
+Translations use `next-intl` with catalogs in `messages/en.json` and `messages/zh-HK.json`. Locale prefixes are required, and the URL determines the language on the server and in the browser. The language links retain the current page, query parameters and section anchor. Unprefixed and original `.html` URLs redirect to English while retaining query parameters and anchors. Both locales are statically generated; locale detection middleware is not needed.
 
 Development and production scripts use Next.js's Webpack compiler for compatibility with restricted development environments.
 
@@ -45,7 +45,9 @@ docker build -t sportinghub-website:prod .
 docker run --rm -p 8080:8080 sportinghub-website:prod
 ```
 
-Open http://localhost:8080. The multi-stage image builds with pnpm and serves the static export through Nginx as an unprivileged user. It includes a `/healthz` health check, real 404 responses and immutable caching for hashed Next.js assets.
+Open http://localhost:8080. The multi-stage image builds Next.js standalone output with pnpm and runs its production Node.js server as an unprivileged user. Only traced runtime dependencies, public files and built assets are copied into the final image. The container health check requests the English homepage, including the configured base path. Next.js handles 404 responses, asset caching and legacy `.html` aliases.
+
+Docker sets `NEXT_OUTPUT=standalone` and builds directly with `next build`, bypassing the static-export postbuild hook. The normal `pnpm build` and `pnpm preview` workflow continues to use `out/` for static hosting.
 
 Pass the public URL and optional subpath when building for your production host:
 
@@ -55,7 +57,7 @@ docker build -t sportinghub-website:prod \
   --build-arg NEXT_PUBLIC_BASE_PATH=/sportinghub .
 ```
 
-The locale pages are then served at `/sportinghub/en/` and `/sportinghub/zh-HK/`. Local `.env` files are excluded from the Docker build context; use these build arguments. Rebuild the image to change either value, since runtime environment variables cannot change the exported pages. Terminate HTTPS at your reverse proxy or load balancer.
+The locale pages are then served at `/sportinghub/en/` and `/sportinghub/zh-HK/`. Local `.env` files are excluded from the Docker build context; use these build arguments. Rebuild the image to change public values, since they are embedded in the build. Terminate HTTPS at your reverse proxy or load balancer.
 
 ## Source layout
 
@@ -75,7 +77,7 @@ For local development, put `NEXT_PUBLIC_BOOKING_API_URL=http://localhost:3003` i
 
 Configure the venue mapping in `.env.local` using the variables in `.env.example`. `NEXT_PUBLIC_BOOKING_TENANT_ID` selects the tenant for both venue bookings and class enrollment (defaults to **3**). `NEXT_PUBLIC_VENUE_VB_A_SERVICE_ID` and `NEXT_PUBLIC_VENUE_VB_B_SERVICE_ID` map volleyball courts A/B; `NEXT_PUBLIC_VENUE_FB_A_SERVICE_ID` and `NEXT_PUBLIC_VENUE_FB_B_SERVICE_ID` map football courts A/B. The other sports use `NEXT_PUBLIC_VENUE_BB_SERVICE_ID`, `NEXT_PUBLIC_VENUE_PB_SERVICE_ID`, `NEXT_PUBLIC_VENUE_BD_SERVICE_ID`, `NEXT_PUBLIC_VENUE_DB_SERVICE_ID`, and `NEXT_PUBLIC_VENUE_TQ_SERVICE_ID`. Set each to a positive integer backend service ID; leave it empty or unset to make that court unavailable. Invalid IDs cause a configuration error. Linked rooms are read from the backend; IDs are never inferred from names or list positions.
 
-For Docker, pass these as build arguments, for example `--build-arg NEXT_PUBLIC_BOOKING_TENANT_ID=3 --build-arg NEXT_PUBLIC_VENUE_VB_A_SERVICE_ID=372`. Service IDs default to empty in Docker, so pass every court you want enabled. These public variables are embedded in the browser bundle; rebuild the site/image after changing them. Runtime `docker run -e` values cannot change the static export.
+For Docker, pass these as build arguments, for example `--build-arg NEXT_PUBLIC_BOOKING_TENANT_ID=3 --build-arg NEXT_PUBLIC_VENUE_VB_A_SERVICE_ID=372`. Service IDs default to empty in Docker, so pass every court you want enabled. These public variables are embedded in the browser bundle; rebuild the site/image after changing them. Runtime `docker run -e` values cannot change the browser bundle.
 
 Use `GET /public/place/services?tenantId=3` to find IDs. In the dashboard, enable place bookings on each service, configure its prices and linked rooms, and turn on both frontend visibility and frontend booking. Disabled/deleted services and rooms do not appear. Court A/B may use separate services when they have different prices. Configure shared physical rooms in the dashboard so conflicts are respected; no room IDs belong in the website mapping.
 

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { randomUUID } from "node:crypto";
 
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
 const standalone = process.env.NEXT_OUTPUT === "standalone";
@@ -8,6 +9,10 @@ const nextConfig: NextConfig = {
   output: standalone ? "standalone" : "export",
   trailingSlash: true,
   basePath,
+  env: {
+    NEXT_PUBLIC_SITE_BUILD_ID: randomUUID(),
+    NEXT_PUBLIC_SITE_BUILD_TIME: String(Date.now()),
+  },
   images: { unoptimized: true },
   // Static exports create these files in postbuild; the Node server uses rewrites.
   ...(standalone && {

@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { isLocale, locales } from "@/i18n/config";
 import { getSiteMessages } from "@/i18n/translate";
+import { DeploymentRefresh } from "@/components/deployment-refresh";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -45,6 +46,7 @@ export default async function RootLayout({
         />
       </head>
       <body>
+        <DeploymentRefresh />
         <NextIntlClientProvider
           locale={locale}
           messages={getSiteMessages(locale)}

@@ -49,6 +49,8 @@ Open http://localhost:8080. The multi-stage image builds Next.js standalone outp
 
 Docker sets `NEXT_OUTPUT=standalone` and builds directly with `next build`, bypassing the static-export postbuild hook. The normal `pnpm build` and `pnpm preview` workflow continues to use `out/` for static hosting.
 
+Production pages check `/version.json` on load, every minute while visible, and when returning online or focusing the tab. A newer build triggers a full refresh of the current URL. Checks wait while visiting booking routes or editing an input, and a session guard limits automatic reloads to once every five minutes. Network errors leave the page usable. Browsers that block session storage skip automatic reloads to prevent loops. This applies to clients loaded after this feature is deployed; already-open older clients need one manual refresh. Deploy each build as one artifact across replicas, and configure any CDN to avoid caching `/version.json`.
+
 Pass the public URL and optional subpath when building for your production host:
 
 ```sh

@@ -9,6 +9,7 @@
     "preview": "node scripts/preview.mjs",
     "postbuild": "node scripts/static-aliases.mjs",
     "test:smoke": "node scripts/smoke.mjs",
+    "test:deployment-refresh": "node --test scripts/test-deployment-refresh.mjs",
     "start": "node scripts/preview.mjs"
   },
   "dependencies": {

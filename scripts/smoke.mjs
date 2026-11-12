@@ -37,7 +37,7 @@ const fixtureMapping = {
     ["vb", "bb", "pb", "bd", "fb", "db", "tq"].map((sport) => [
       sport,
       Object.fromEntries(
-        (["vb", "fb"].includes(sport) ? ["A", "B"] : ["default"])
+        (["vb", "fb", "bd", "db", "tq"].includes(sport) ? ["A", "B"] : ["default"])
           .map((variant) => [variant, { serviceId: null }]),
       ),
     ]),
@@ -46,6 +46,9 @@ const fixtureMapping = {
 const fixtureServices = [];
 const fixtureEnv = {
   "process.env.NEXT_PUBLIC_BOOKING_TENANT_ID": JSON.stringify(String(fixtureMapping.tenantId)),
+  "process.env.NEXT_PUBLIC_PT_CATEGORY_ID": '"81"',
+  "process.env.NEXT_PUBLIC_PT_BRANCH_ID": '"14"',
+  "process.env.NEXT_PUBLIC_KPAY_REDIRECT_URL": JSON.stringify(`${origin}${basePath}/{locale}/booking/confirmation/`),
 };
 for (const [sport, variants] of Object.entries(fixtureMapping.courts)) {
   for (const [variant, link] of Object.entries(variants)) {
@@ -85,6 +88,16 @@ const courseSessions = [0, 7, 14].map((days, index) => ({
 const fixtureCourse = { ...courseSessions[0], pricingMode: "course", totalCents: 120000, lessons: courseSessions, lessonCount: 3, courseEndTime: courseSessions[2].endTime };
 const fixtureOfferings = [...fixtureLessons, fixtureCourse];
 const fixtureCheckouts = new Map();
+const fixtureTrainingServices = [
+  ...["Youth and Senior", "Adult", "Athlete"].flatMap((name, index) =>
+    [1, 2, 3].map((ratio) => ({
+      id: 392 + index * 3 + ratio - 1, categoryId: 81,
+      name: `個人訓練: ${name} 1 on ${ratio}`, nameZh: null, serviceMinutes: 60,
+      priceCents: (index === 0 ? [80000, 120000, 150000] : [90000, 140000, 180000])[ratio - 1],
+    })),
+  ),
+  { id: 401, categoryId: 81, name: "個人訓練: Sports Massage and Stretching", nameZh: null, serviceMinutes: 60, priceCents: 90000 },
+];
 function fixtureQuote(request) {
   const service = fixtureServices.find((s) => s.id === Number(request.serviceId));
   const room = service.placeRooms.find((r) => r.id === Number(request.roomId));
@@ -96,19 +109,54 @@ function fixtureQuote(request) {
     const hourlyRateCents = peak ? service.placeSettings.peakHourlyRateCents : service.placeSettings.nonPeakHourlyRateCents;
     segments.push({ startTime: new Date(instant).toISOString(), endTime: new Date(instant + 3600000).toISOString(), period: peak ? "peak" : "nonPeak", minutes: 60, hourlyRateCents, amountCents: hourlyRateCents });
   }
-  return { service, room, startTime: new Date(start).toISOString(), endTime: new Date(end).toISOString(), currency: "HKD", totalCents: segments.reduce((sum, segment) => sum + segment.amountCents, 0), segments, paymentAvailable: true, paymentMode: "deferred" };
+  return { service, room, startTime: new Date(start).toISOString(), endTime: new Date(end).toISOString(), currency: "HKD", totalCents: segments.reduce((sum, segment) => sum + segment.amountCents, 0), segments, paymentAvailable: true, paymentMode: "kpay" };
 }
 function fixtureFetch(input, options = {}) {
   const url = new URL(input);
+  if (url.pathname === "/reservation/v4") {
+    assert.equal(url.searchParams.get("tenant"), "sportinghub");
+    const body = JSON.parse(options.body);
+    assert.equal(body.branchId, 14); assert.equal(body.ppl, 1);
+    assert.equal(body.isMock, undefined);
+    assert.equal(body.redirectUrl, `${origin}${basePath}/${url.searchParams.get("locale")}/booking/confirmation/`);
+    assert.ok(/^[a-f0-9]{64}$/.test(body.checkoutToken));
+    return Promise.resolve({ ok: true, text: async () => "https://api.sportinghub.test/kpay/redirect/77" });
+  }
   assert.equal(url.searchParams.get("tenantId"), String(fixtureMapping.tenantId));
   let data;
+  if (url.pathname === "/public/catalog/branches") {
+    assert.equal(url.searchParams.get("categoryId"), "81");
+    assert.ok(fixtureTrainingServices.some(service => service.id === Number(url.searchParams.get("serviceId"))));
+    return Promise.resolve({ ok: true, json: async () => [
+      { id: 14, name: "Hong Kong Sporting Hub", nameEn: "Hong Kong Sporting Hub", tenantCode: "sportinghub" },
+      { id: 16, name: "Just Performance", nameEn: "Just Performance", tenantCode: "sportinghub" },
+    ] });
+  }
+  if (url.pathname === "/public/catalog/availability") {
+    assert.equal(url.searchParams.get("categoryId"), "81");
+    const service = fixtureTrainingServices.find(service => service.id === Number(url.searchParams.get("serviceId")));
+    const date = url.searchParams.get("date"), branchId = Number(url.searchParams.get("branchId"));
+    assert.ok(service); assert.ok([14, 16].includes(branchId));
+    data = { serviceId: service.id, branchId, date, timezone: "Asia/Hong_Kong", serviceMinutes: service.serviceMinutes, priceCents: service.priceCents,
+      slots: Array.from({ length: 32 }, (_, index) => {
+        const minutes = 7 * 60 + index * 30, time = `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${minutes % 60 ? "30" : "00"}`;
+        const startTime = new Date(`${date}T${time}:00+08:00`), endTime = new Date(startTime.getTime() + service.serviceMinutes * 60000);
+        return { time, startTime: startTime.toISOString(), endTime: endTime.toISOString(), available: startTime.getTime() > fixedNow && minutes + service.serviceMinutes <= 23 * 60 && time !== "13:00" };
+      }),
+    };
+    return Promise.resolve({ ok: true, json: async () => structuredClone(data) });
+  }
+  if (url.pathname === "/public/catalog/services") {
+    assert.equal(url.searchParams.get("categoryId"), "81");
+    return Promise.resolve({ ok: true, json: async () => structuredClone(fixtureTrainingServices) });
+  }
   if (url.pathname.includes("/public/enrollment/")) {
     let data;
     if (url.pathname.endsWith("/courses")) data = fixtureOfferings;
     else if (url.pathname.endsWith("/quote")) {
       const lesson = url.searchParams.has("courseId") ? fixtureOfferings.find(l => l.pricingMode === "course" && l.course.id === Number(url.searchParams.get("courseId"))) : fixtureLessons.find(l => l.id === Number(url.searchParams.get("lessonId")));
       if (!lesson?.canEnroll) return Promise.resolve({ ok: false, status: 409, json: async () => ({}) });
-      data = { ...lesson, courseId: lesson.course.id, lessonId: lesson.pricingMode === "course" ? undefined : lesson.id, paymentMode: "deferred" };
+      data = { ...lesson, courseId: lesson.course.id, lessonId: lesson.pricingMode === "course" ? undefined : lesson.id, paymentMode: "kpay" };
     } else if (url.pathname.endsWith("/checkouts")) {
       const body = JSON.parse(options.body), lesson = body.courseId ? fixtureOfferings.find(l => l.pricingMode === "course" && l.course.id === body.courseId) : fixtureLessons.find(l => l.id === body.lessonId);
       assert.equal(body.expectedTotalCents, lesson.totalCents);
@@ -123,7 +171,7 @@ function fixtureFetch(input, options = {}) {
       const token = options.headers?.Authorization?.replace(/^Bearer /, ""), id = url.pathname.split("/checkouts/")[1]?.split("/")[0];
       const entry = id ? fixtureCheckouts.get(id) : [...fixtureCheckouts.values()].find(e => e.token === token && e.record.lesson);
       if (!entry || entry.token !== token) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
-      if (url.pathname.endsWith("/payment")) { entry.record.status = "Confirmed"; data = { checkout: entry.record, checkoutUrl: null }; }
+      if (url.pathname.endsWith("/payment")) { entry.record.paymentStarted = true; data = { checkout: entry.record, checkoutUrl: `https://payment.example.test/checkout/${entry.record.id}` }; }
       else if (url.pathname.endsWith("/cancel")) { entry.record.status = "Cancelled"; data = entry.record; }
       else data = entry.record;
     }
@@ -147,7 +195,13 @@ function fixtureFetch(input, options = {}) {
     const id = url.pathname.split("/checkouts/")[1]?.split("/")[0];
     const entry = id ? fixtureCheckouts.get(id) : [...fixtureCheckouts.values()].find((value) => value.token === token);
     if (!entry || entry.token !== token) return Promise.resolve({ ok: false, status: 404, json: async () => ({}) });
-    if (url.pathname.endsWith("/payment")) { entry.record.status = "Confirmed"; entry.record.paymentStarted = false; data = { checkout: entry.record, checkoutUrl: null }; }
+    if (url.pathname.endsWith("/payment")) {
+      const body = JSON.parse(options.body);
+      assert.equal(new URL(body.redirectUrl).origin, origin);
+      assert.ok(new URL(body.redirectUrl).pathname.endsWith('/booking/confirmation/'));
+      entry.record.paymentStarted = true;
+      data = { checkout: entry.record, checkoutUrl: `https://payment.example.test/checkout/${entry.record.id}` };
+    }
     else if (url.pathname.endsWith("/cancel")) { entry.record.status = "Cancelled"; data = entry.record; }
     else data = entry.record;
   } else {
@@ -265,6 +319,7 @@ function createPage(
   } = {},
 ) {
   const requests = [];
+  const redirects = [];
   const timers = new Map();
   let timerId = 0;
   const errors = [];
@@ -358,7 +413,7 @@ function createPage(
       null,
       "Dispose the previous mount before mounting again",
     );
-    dispose = runtime.initializeSite(page, locale);
+    dispose = runtime.initializeSite(page, locale, { navigate: (url) => redirects.push(url) });
     runtime.syncLocaleLinks(document, window.location);
   };
   const unmount = () => {
@@ -394,6 +449,7 @@ function createPage(
     fill,
     timers,
     requests,
+    redirects,
     ready: () => new Promise(setImmediate),
     locale,
     mount,
@@ -419,6 +475,12 @@ async function withPage(page, options, run) {
   }
 }
 
+async function waitForTrainingAvailability(s) {
+  await s.ready();
+  assert.equal(s.document.querySelector("#ptBranches"), null);
+  await s.ready();
+}
+
 function fillContact(session) {
   for (const [id, value] of Object.entries({
     fFirst: "Smoke",
@@ -428,6 +490,17 @@ function fillContact(session) {
     fPhone: "55849706",
   }))
     session.fill(`#${id}`, value);
+  if (new URL(session.window.location.href).searchParams.get("mode") === "pt") session.fill("#fPtGender", "Male");
+}
+
+async function settleVenuePayment(session) {
+  session.screen("s7");
+  assert.ok(session.redirects.at(-1)?.startsWith("https://payment.example.test/checkout/"));
+  const entry = fixtureCheckouts.get(new URL(session.window.location.href).searchParams.get("checkoutId"));
+  assert.equal(entry.record.status, "Pending");
+  assert.equal(entry.record.receivedCents, 0);
+  entry.record.status = "Paid"; entry.record.receivedCents = entry.record.totalCents; entry.record.dueCents = 0;
+  session.window.dispatchEvent(new session.window.Event("focus")); await session.ready();
 }
 
 async function completeBooking(session) {
@@ -441,6 +514,7 @@ async function completeBooking(session) {
   assert.equal(session.find("#paymentNext").textContent, session.find("#barNext").textContent);
   session.click("#paymentNext");
   await session.ready();
+  await settleVenuePayment(session);
   session.screen("s8");
   assert.equal(session.find("#summary").hidden, true);
   assert.equal(session.find("#bar").style.display, "none");
@@ -692,7 +766,7 @@ await check(
 await check("Home pricing, drawer, slideshow and mount cleanup", () =>
   withPage("home", {}, (s) => {
     assert.equal(s.document.documentElement.lang, "en");
-    assert.equal(s.document.querySelectorAll("#rateRows tr").length, 9);
+    assert.equal(s.document.querySelectorAll("#rateRows tr").length, 12);
     assert.equal(s.find("#memberFee").textContent, "HK$ 350");
     assert.match(s.find('[data-price-cat="court"]').textContent, /HK\$ 290/);
     assert.match(
@@ -921,6 +995,45 @@ await check(
   },
 );
 
+await check("Badminton, Teqvoly and dodgeball select separate A/B services through checkout", async () => {
+  for (const locale of locales) for (const sport of ["bd", "tq", "db"]) {
+    await withPage("booking", { locale, query: `mode=venue&court=${sport}` }, async (s) => {
+      assert.equal(s.find("#sumNext").disabled, true, "A court must be chosen");
+      for (const court of ["A", "B"]) {
+        assert.equal(s.find(`[data-csize="${court}"] .cs-t`).textContent, locale === "en" ? `Court ${court}` : `${court}場`);
+      }
+      s.click('[data-csize="A"]');
+      s.click("#sumNext");
+      await s.ready();
+      s.click('[data-t="23:00"]');
+      assert.equal(new URL(s.window.location.href).searchParams.get("serviceId"), String(fixtureMapping.courts[sport].A.serviceId));
+      await new Promise((resolve) => {
+        s.window.addEventListener("popstate", resolve, { once: true });
+        s.window.history.back();
+      });
+      await s.ready();
+      s.screen("s1");
+      s.click('[data-csize="B"]');
+      s.click("#sumNext");
+      await s.ready();
+      assert.equal(s.document.querySelectorAll(".tslot.on").length, 0, "Changing court clears selected hours");
+      assert.equal(s.find("#sumNext").disabled, true);
+      s.click('[data-t="23:00"]');
+      const serviceId = fixtureMapping.courts[sport].B.serviceId;
+      assert.equal(new URL(s.window.location.href).searchParams.get("serviceId"), String(serviceId));
+      s.click("#sumNext");
+      await s.ready();
+      s.screen("s6");
+      fillContact(s);
+      s.click("#cWaiver");
+      await completeBooking(s);
+      const posted = s.requests.find((r) => r.url.pathname === "/public/place/checkouts" && r.options?.method === "POST");
+      assert.equal(JSON.parse(posted.options.body).serviceId, serviceId);
+      assert.match(s.find("#recap").textContent, locale === "en" ? /Court B/ : /B場/);
+    });
+  }
+});
+
 await check("Classes use backend categories, coaches, prices, seats and enrollment references", async () => {
   for (const locale of locales) await withPage("booking", { locale, query: "mode=class" }, async (s) => {
     s.screen("s1c"); assert.match(s.find("#catList").textContent, /Sports classes/);
@@ -984,7 +1097,7 @@ await check("Enrollment confirmations restore without public availability and re
     await withPage("booking", { locale, step: "confirmation", query, sessionData, fetch: (input,options) => {
       if (new URL(input).pathname.endsWith("/courses")) return Promise.resolve({ok:true,json:async()=>[]});
       return fixtureFetch(input,options);
-    } }, refreshed => { refreshed.screen("s8"); assert.match(refreshed.find("#recap").textContent,/TEST-ENROLL-/); assert.match(refreshed.find("#s8 .sub").textContent,/HK\$ 0/); });
+    } }, refreshed => { refreshed.screen("s8"); assert.match(refreshed.find("#recap").textContent,/TEST-ENROLL-/); assert.match(refreshed.find("#s8 .sub").textContent, locale === "en" ? /Payment received/ : /付款/); });
     await withPage("booking", {locale,step:"confirmation",query}, stranger => {stranger.screen("s7");assert.equal(stranger.find("#paymentNext").disabled,true);});
   });
 });
@@ -1030,43 +1143,354 @@ await check("Direct classes route loads real lessons, handles API errors and ign
 });
 
 await check(
-  "Personal training filters reset selections and book a single hour",
+  "Personal training shows only S&C and selects mapped category services",
   async () => {
     for (const locale of locales)
       await withPage("booking", { locale, query: "mode=pt" }, async (s) => {
         s.screen("s5");
-        s.click('[data-coach="marco"]');
-        s.click('#coachFilters [data-t="sc"]');
+        assert.equal(s.document.querySelectorAll("#coachFilters .chip").length, 1);
+        assert.equal(s.find("#coachFilters .chip").textContent, locale === "en" ? "S&C" : "體能訓練");
+        assert.equal(s.document.querySelectorAll("#coachList .opt").length, 4);
+        assert.deepEqual([...s.document.querySelectorAll("#coachList .t")].map((el) => el.textContent), ["Youth and Senior", "Adult", "Athlete", "Sports Massage and Stretching"]);
+        assert.match(s.find('[data-coach="Youth and Senior"]').textContent, /HK\$ 800/);
+        assert.match(s.find('[data-coach="Sports Massage and Stretching"]').textContent, /HK\$ 900/);
         assert.equal(
           s.find("#sumNext").disabled,
           true,
-          "A filtered-out coach must be cleared",
+          "A service must be selected",
         );
-        s.click('[data-coach="ken"]');
+        s.click('[data-coach="Adult"]');
         s.click("#sumNext");
+        assert.equal(new URL(s.window.location.href).searchParams.get("training"), "Adult");
+        assert.equal(new URL(s.window.location.href).searchParams.has("serviceId"), false);
+        assert.equal(new URL(s.window.location.href).searchParams.has("coach"), false);
         s.screen("s5b");
-        s.click('[data-size="8"]');
+        assert.deepEqual([...s.document.querySelectorAll("#sizeList .t")].map((el) => el.textContent), ["1 on 1", "1 on 2", "1 on 3"]);
+        assert.match(s.find('[data-size="395"]').textContent, /HK\$ 900/);
+        assert.match(s.find('[data-size="396"]').textContent, /HK\$ 1,400/);
+        assert.match(s.find('[data-size="397"]').textContent, /HK\$ 1,800/);
+        assert.equal(s.find("#sumNext").disabled, true);
+        s.click('[data-size="396"]');
+        assert.equal(s.find("#sumTotal").textContent, "HK$ 1,400");
+        assert.equal(new URL(s.window.location.href).searchParams.get("serviceId"), "396");
         s.click("#sumNext");
         s.screen("s2");
+        await waitForTrainingAvailability(s);
+        s.click('#dates2 [data-d="1"]'); await s.ready();
         assert.equal(s.document.querySelector("#slotNight"), null);
         s.click('[data-t="10:00"]');
         s.click('[data-t="11:00"]');
         assert.equal(s.document.querySelectorAll(".tslot.on").length, 1);
         s.click("#sumNext");
+        await s.ready();
         s.screen("s6");
         assert.equal(s.find("#s6extra").hidden, true);
         fillContact(s);
         s.click("#cWaiver");
-        assert.equal(s.find("#sumTotal").textContent, "HK$ 1,000");
-        const { calendar } = await completeBooking(s);
-        assert.equal(
-          calendar.searchParams.get("dates"),
-          "20261024T110000/20261024T120000",
-        );
+        assert.equal(s.find("#sumTotal").textContent, "HK$ 1,400");
+        s.click("#sumNext"); await s.ready(); s.screen("s7");
+        s.click("#paymentNext"); await s.ready(); s.screen("s7");
+        assert.deepEqual(s.redirects, ["https://api.sportinghub.test/kpay/redirect/77"]);
+        const posted = s.requests.find(request => request.url.pathname === "/reservation/v4");
+        const body = JSON.parse(posted.options.body);
+        assert.deepEqual(body.bookingPpl[0].serviceIds, [396]);
+        assert.equal(body.bookingPpl[0].tel, "+85255849706");
+        assert.equal(body.bookingPpl[0].gender, "Male");
+        assert.equal(body.expectedTotalCents, 140000);
+        assert.equal(body.time, "2026-10-25T03:00:00.000Z");
+        assert.match(s.find("#s7lines").textContent, /HK\$ 1,400/);
+        assert.equal(s.document.querySelector("#ptCheckoutLink"), null);
+        assert.equal(s.document.querySelectorAll('#s7 button:not([hidden])').length, 1);
+        assert.equal(s.find("#paymentNext").textContent, locale === "en" ? "Continue to Pay" : "繼續付款");
+        s.click("#paymentNext"); await s.ready();
+        assert.equal(s.requests.filter(request => request.url.pathname === "/reservation/v4").length, 1);
+        assert.equal(s.redirects.length, 2);
         assert.equal(s.document.querySelector("#qrpass"), null);
       });
   },
 );
+
+async function preparePTPayment(s) {
+  await s.ready(); await s.ready();
+  s.screen("s6"); fillContact(s); s.click("#cWaiver");
+  s.click("#sumNext"); await s.ready(); s.screen("s7");
+}
+const ptPaymentOptions = { step: "details", query: "mode=pt&serviceId=396&date=2026-10-25&time=11:00&branchId=14" };
+
+await check("PT double clicks submit once and redirect without a client confirmation", async () => {
+  let finish;
+  await withPage("booking", { ...ptPaymentOptions, fetch: (input, options) => new URL(input).pathname === "/reservation/v4" ? new Promise(resolve => { finish = () => resolve(fixtureFetch(input, options)); }) : fixtureFetch(input, options) }, async s => {
+    await preparePTPayment(s);
+    s.find("#paymentNext").click(); s.find("#paymentNext").click();
+    assert.equal(s.requests.filter(r => r.url.pathname === "/reservation/v4").length, 1);
+    assert.equal(s.find("#paymentNext").disabled, true);
+    finish(); await s.ready();
+    assert.equal(s.redirects.length, 1); s.screen("s7");
+  });
+});
+
+await check("PT lost responses and reloads reuse the checkout token even when its slot is occupied", async () => {
+  let sessionData, query, token;
+  await withPage("booking", { ...ptPaymentOptions, fetch: async (input, options) => {
+    const response = await fixtureFetch(input, options);
+    if (new URL(input).pathname === "/reservation/v4") throw new Error("Lost response after commit");
+    return response;
+  } }, async s => {
+    await preparePTPayment(s); s.click("#paymentNext"); await s.ready(); s.screen("s7");
+    assert.equal(s.redirects.length, 0);
+    token = JSON.parse(s.requests.find(r => r.url.pathname === "/reservation/v4").options.body).checkoutToken;
+    sessionData = Object.fromEntries(Object.keys(s.window.sessionStorage).map(key => [key, s.window.sessionStorage.getItem(key)]));
+    query = s.window.location.search.slice(1);
+  });
+  await withPage("booking", { step: "payment", query, sessionData, fetch: async (input, options) => {
+    const response = await fixtureFetch(input, options);
+    if (new URL(input).pathname === "/public/catalog/availability") {
+      const data = await response.json(); data.slots.forEach(slot => { slot.available = false; });
+      return { ok: true, json: async () => data };
+    }
+    return response;
+  } }, async s => {
+    await s.ready(); s.screen("s7"); s.click("#paymentNext"); await s.ready();
+    assert.equal(JSON.parse(s.requests.find(r => r.url.pathname === "/reservation/v4").options.body).checkoutToken, token);
+    assert.equal(s.redirects.length, 1); s.screen("s7");
+  });
+});
+
+await check("PT gateway errors and unsafe redirects never produce a confirmation", async () => {
+  for (const response of [
+    { ok: false, status: 503, json: async () => ({ message: "Missing merchant" }) },
+    { ok: true, text: async () => "javascript:alert(1)" },
+  ]) await withPage("booking", { ...ptPaymentOptions, fetch: (input, options) => new URL(input).pathname === "/reservation/v4" ? Promise.resolve(response) : fixtureFetch(input, options) }, async s => {
+    await preparePTPayment(s); s.click("#paymentNext"); await s.ready();
+    s.screen("s7"); assert.equal(s.redirects.length, 0); assert.equal(s.document.querySelector("#ptCheckoutLink"), null);
+    assert.ok(s.find("#paymentStatus").textContent.trim());
+  });
+  await withPage("booking", { ...ptPaymentOptions, fetch: (input, options) => new URL(input).pathname === "/reservation/v4" ? Promise.resolve({ ok: false, status: 409, json: async () => ({ code: "PT_SELECTION_CHANGED" }) }) : fixtureFetch(input, options) }, async s => {
+    await preparePTPayment(s); s.click("#paymentNext"); await s.ready();
+    s.screen("s2"); assert.equal(s.redirects.length, 0); assert.equal(s.window.sessionStorage.getItem("shhk-pt-checkout"), null);
+    assert.equal(new URL(s.window.location.href).searchParams.has("time"), false);
+  });
+});
+
+await check("PT KPay returns verify real payment before showing website receipts in both languages", async () => {
+  for (const locale of locales) {
+    let sessionData;
+    await withPage("booking", { ...ptPaymentOptions, locale }, async s => {
+      await preparePTPayment(s); s.click("#paymentNext"); await s.ready();
+      sessionData = Object.fromEntries(Object.keys(s.window.sessionStorage).map(key => [key, s.window.sessionStorage.getItem(key)]));
+    });
+    const query = "mode=pt&reservationCode=REAL-PT-123";
+    const record = { reference: "REAL-PT-123", status: "Pending", currency: "HKD", totalCents: 140000, receivedCents: 0, dueCents: 140000,
+      service: { id: 396, name: "個人訓練: Adult 1 on 2", nameZh: "個人訓練: Adult 1 on 2" },
+      branch: { id: 14, name: "Sporting Hub", nameEn: "Sporting Hub", address: "Actual booking address" },
+      startTime: "2026-10-25T03:00:00.000Z", endTime: "2026-10-25T04:00:00.000Z" };
+    const fetch = (input, options) => {
+      const url = new URL(input);
+      assert.equal(url.pathname, "/reservation/v4/checkout-status", "A payment return must not reload public availability");
+      assert.equal(url.searchParams.get("tenantId"), String(fixtureMapping.tenantId));
+      assert.equal(url.searchParams.get("code"), record.reference);
+      assert.match(options.headers.Authorization, /^Bearer [a-f0-9]{64}$/);
+      assert.equal(url.search.includes("checkoutToken"), false);
+      return Promise.resolve({ ok: true, json: async () => structuredClone(record) });
+    };
+    await withPage("booking", { locale, step: "confirmation", query, sessionData, fetch }, async s => {
+      s.screen("s7"); assert.equal(s.document.querySelector(".screen.on #recap"), null);
+      assert.match(s.find("#paymentStatus").textContent, locale === "en" ? /not been confirmed/ : /尚未確認/);
+      record.status = "Paid"; record.receivedCents = 140000; record.dueCents = 0;
+      s.window.dispatchEvent(new s.window.Event("focus")); await s.ready(); s.screen("s8");
+      assert.match(s.find("#recap").textContent, /REAL-PT-123/);
+      assert.match(s.find("#recap").textContent, /Adult 1 on 2/);
+      assert.match(s.find("#recap").textContent, /HK\$ 1,400/);
+      const calendar = new URL(s.find("#gcal").href);
+      assert.equal(calendar.searchParams.get("dates"), "20261025T110000/20261025T120000");
+      assert.equal(calendar.searchParams.get("location"), "Actual booking address");
+      assert.match(decodeURIComponent(s.find("#ics").href), /REAL-PT-123/);
+      assert.equal(new URL(s.window.location.href).searchParams.get("reservationCode"), "REAL-PT-123");
+      assert.equal(s.requests.some(request => request.url.pathname === "/reservation/v4"), false);
+    });
+    await withPage("booking", { locale, step: "confirmation", query, sessionData, fetch }, s => { s.screen("s8"); assert.match(s.find("#recap").textContent, /REAL-PT-123/); });
+    for (const status of ["Expired", "Cancelled"]) {
+      record.status = status; record.receivedCents = 0; record.dueCents = 140000;
+      await withPage("booking", { locale, step: "confirmation", query, sessionData, fetch }, s => { s.screen("s7"); assert.equal(s.find("#paymentNext").disabled, true); });
+    }
+    await withPage("booking", { locale, step: "confirmation", query, fetch }, s => {
+      s.screen("s7"); assert.equal(s.requests.length, 0); assert.equal(s.find("#paymentNext").disabled, true);
+      assert.match(s.find("#paymentStatus").textContent, locale === "en" ? /browser/ : /瀏覽器/);
+    });
+    await withPage("booking", { locale, step: "confirmation", query, sessionData, fetch: async () => ({ ok: false, status: 503 }) }, s => {
+      s.screen("s7"); assert.match(s.find("#paymentStatus").textContent, locale === "en" ? /could not verify/ : /未能核實/);
+    });
+  }
+});
+
+await check("PT ratios retain exact services, reset on group changes, and direct services skip ratios", async () => {
+  for (const locale of locales) {
+    await withPage("booking", { locale, query: "mode=pt&serviceId=393" }, async (s) => {
+      assert.equal(s.find('[data-coach="Youth and Senior"]').classList.contains("sel"), true);
+      s.click("#sumNext"); s.screen("s5b");
+      assert.equal(s.find('[data-size="393"]').classList.contains("sel"), true);
+      s.click("#back"); s.screen("s5");
+      s.click('[data-coach="Athlete"]');
+      s.click("#sumNext");
+      assert.equal(s.find("#sumNext").disabled, true, "Changing group clears its ratio");
+      assert.deepEqual([...s.document.querySelectorAll("#sizeList .opt")].map((el) => el.dataset.size), ["398", "399", "400"]);
+      s.click('[data-size="400"]'); s.click("#sumNext");
+      await waitForTrainingAvailability(s);
+      s.click('#dates2 [data-d="1"]'); await s.ready();
+      s.click('[data-t="11:00"]');
+      s.click("#back"); s.click('[data-size="398"]'); s.click("#sumNext");
+      assert.equal(s.document.querySelectorAll(".tslot.on").length, 0, "Changing ratio clears selected times");
+      const query = s.window.location.search.slice(1);
+      await withPage("booking", { locale, step: "time", query }, (restored) => {
+        restored.screen("s2");
+        assert.equal(new URL(restored.window.location.href).searchParams.get("serviceId"), "398");
+      });
+    });
+    await withPage("booking", { locale, step: "group", query: "mode=pt&training=Adult&serviceId=392" }, (s) => {
+      s.screen("s5b");
+      assert.equal(s.find("#sumNext").disabled, true, "A ratio from a different group is rejected");
+    });
+    await withPage("booking", { locale, query: "mode=pt" }, async (s) => {
+      s.click('[data-coach="Sports Massage and Stretching"]'); s.click("#sumNext");
+      s.screen("s2");
+      assert.equal(s.find("#sumTotal").textContent, "HK$ 900");
+      assert.equal(new URL(s.window.location.href).searchParams.get("serviceId"), "401");
+      await withPage("booking", { locale, step: "time", query: s.window.location.search.slice(1) }, (restored) => {
+        restored.screen("s2");
+        restored.click("#back"); restored.screen("s5");
+      });
+      s.click("#back"); s.screen("s5");
+    });
+    const service = { ...fixtureTrainingServices[0], name: '個人訓練： Test <Group> 1 on 2', nameZh: '個人訓練： 測試 <組別> 1 on 2' };
+    await withPage("booking", { locale, query: "mode=pt", fetch: async () => ({ ok: true, json: async () => [service] }) }, (s) => {
+      assert.equal(s.find("#coachList .t").textContent, locale === "en" ? "Test <Group>" : "測試 <組別>");
+      assert.equal(s.document.querySelector("#coachList Group"), null);
+      s.click('[data-coach="Test <Group>"]'); s.click("#sumNext");
+      assert.equal(s.find("#sizeList .t").textContent, "1 on 2");
+      assert.equal(s.find("#sumNext").disabled, true);
+    });
+  }
+});
+
+await check("PT prices come from the catalog, retain zero, and never substitute a missing price", async () => {
+  for (const locale of locales) {
+    const services = fixtureTrainingServices.map((service) => ({
+      ...service,
+      priceCents: service.id === 395 ? 123450 : service.id === 396 ? 0 : null,
+    }));
+    await withPage("booking", { locale, query: "mode=pt", fetch: async () => ({ ok: true, json: async () => services }) }, (s) => {
+      assert.equal(s.document.querySelectorAll("#coachList .opt").length, 4, "Unpriced services remain listed");
+      assert.equal(s.find('[data-coach="Sports Massage and Stretching"]').disabled, false, "Branch selection can resolve a differing catalog price");
+      s.click('[data-coach="Adult"]'); s.click("#sumNext");
+      assert.match(s.find('[data-size="395"]').textContent, /HK\$ 1,234\.5/);
+      assert.equal(s.find('[data-size="397"]').disabled, false);
+      assert.match(s.find('[data-size="397"]').textContent, /HK\$ TBC/);
+      s.click('[data-size="395"]');
+      assert.equal(s.find("#sumTotal").textContent, "HK$ 1,234.5");
+      s.click('[data-size="396"]');
+      assert.equal(s.find("#sumTotal").textContent, "HK$ 0");
+      assert.equal(s.find("#sumNext").disabled, false);
+    });
+  }
+});
+
+await check("PT v4 availability uses the configured branch, supports half hours, retries failures and rechecks before details", async () => {
+  for (const locale of locales) {
+    let failed = true, lost = false;
+    await withPage("booking", { locale, step: "time", query: "mode=pt&serviceId=396&date=2026-10-25", fetch: async (input, options) => {
+      if (new URL(input).pathname === "/public/catalog/availability") {
+        if (failed) throw new Error("Offline");
+        const data = await (await fixtureFetch(input, options)).json();
+        if (lost) data.slots.find(slot => slot.time === "11:30").available = false;
+        return { ok: true, json: async () => data };
+      }
+      return fixtureFetch(input, options);
+    } }, async (s) => {
+      s.screen("s2");
+      assert.equal(s.document.querySelectorAll("#dates2 .date").length, 51);
+      assert.equal(s.document.querySelectorAll("#slots .tslot").length, 0);
+      assert.equal(s.find("#sumNext").disabled, true);
+      await waitForTrainingAvailability(s);
+      assert.equal(s.find("#slotRetry").hidden, false);
+      assert.equal(s.find("#sumNext").disabled, true);
+      failed = false; s.click("#slotRetry"); await s.ready();
+      assert.equal(s.find('[data-t="13:00"]').disabled, true);
+      s.click('[data-t="11:30"]');
+      assert.equal(new URL(s.window.location.href).searchParams.get("branchId"), "14");
+      lost = true;
+      s.click("#sumNext");
+      assert.equal(s.find("#sumNext").disabled, true, "Slot is being rechecked");
+      await s.ready(); s.screen("s2");
+      assert.equal(s.document.querySelectorAll(".tslot.on").length, 0);
+      assert.equal(s.find('[data-t="11:30"]').disabled, true);
+      s.click('[data-t="12:30"]'); s.click("#sumNext"); await s.ready();
+      s.screen("s6");
+      const calls = s.requests.filter(r => r.url.pathname === "/public/catalog/availability");
+      assert.ok(calls.length >= 4);
+      assert.ok(calls.every(r => r.url.searchParams.get("serviceId") === "396" && r.url.searchParams.get("categoryId") === "81"));
+    });
+  }
+});
+
+await check("PT uses its configured branch despite URL overrides and ignores stale dates", async () => {
+  const pending = [];
+  await withPage("booking", { step: "time", query: "mode=pt&serviceId=396&branchId=16&date=2026-10-25", fetch: (input, options) => {
+    if (new URL(input).pathname !== "/public/catalog/availability") return fixtureFetch(input, options);
+    return new Promise(resolve => pending.push({ input, resolve }));
+  } }, async (s) => {
+    assert.equal(pending.length, 1);
+    assert.equal(s.document.querySelector("#ptBranches"), null);
+    assert.equal(new URL(pending[0].input).searchParams.get("branchId"), "14");
+    s.click('#dates2 [data-d="2"]'); await s.ready();
+    assert.equal(pending.length, 2);
+    const second = await (await fixtureFetch(pending[1].input)).json();
+    second.priceCents = 155000;
+    pending[1].resolve({ ok: true, json: async () => second }); await s.ready();
+    s.click('[data-t="11:30"]');
+    assert.equal(s.find("#sumTotal").textContent, "HK$ 1,550");
+    pending[0].resolve(await fixtureFetch(pending[0].input)); await s.ready();
+    assert.equal(s.find('[data-t="11:30"]').classList.contains("on"), true);
+    assert.equal(s.find("#sumTotal").textContent, "HK$ 1,550");
+    s.click('#dates2 [data-d="3"]'); s.click('#dates2 [data-d="4"]'); await s.ready();
+    assert.equal(pending.length, 4);
+    const latest = await (await fixtureFetch(pending[3].input)).json();
+    latest.slots.forEach(slot => slot.available = false);
+    pending[3].resolve({ ok: true, json: async () => latest }); await s.ready();
+    pending[2].resolve(await fixtureFetch(pending[2].input)); await s.ready();
+    assert.equal(s.document.querySelectorAll("#slots .tslot:not(:disabled)").length, 0);
+    assert.equal(s.find("#sumNext").disabled, true);
+    assert.ok(pending.every(request => new URL(request.input).searchParams.get("branchId") === "14"));
+    assert.equal(new URL(s.window.location.href).searchParams.get("branchId"), "14");
+  });
+});
+
+await check("PT catalog failures retry, empty/wrong-category catalogs disable selection, and sample coach links do not select services", async () => {
+  for (const locale of locales) {
+    let failed = true;
+    await withPage("booking", { locale, query: "mode=pt&coach=ken", fetch: async (input, options) => {
+      if (new URL(input).pathname === "/public/catalog/services" && failed) throw new Error("Offline");
+      return fixtureFetch(input, options);
+    } }, async (s) => {
+      s.screen("s5");
+      assert.equal(s.document.querySelectorAll("#coachList .opt").length, 0);
+      assert.equal(s.find("#sumNext").disabled, true);
+      assert.equal(s.find("#ptRetry").hidden, false);
+      failed = false;
+      s.click("#ptRetry"); await s.ready();
+      assert.equal(s.document.querySelectorAll("#coachList .opt").length, 4);
+      assert.equal(s.find("#sumNext").disabled, true);
+    });
+    for (const services of [[], [{ ...fixtureTrainingServices[0], categoryId: 99 }]]) {
+      await withPage("booking", { locale, query: "mode=pt&serviceId=396", fetch: async (input, options) =>
+        new URL(input).pathname === "/public/catalog/services" ? { ok: true, json: async () => services } : fixtureFetch(input, options),
+      }, (s) => {
+        assert.equal(s.document.querySelectorAll("#coachList .opt").length, 0);
+        assert.equal(s.find("#sumNext").disabled, true);
+        assert.ok(s.find("#ptStatus").textContent);
+      });
+    }
+  }
+});
 
 await check(
   "Language and booking render when browser storage is unavailable",
@@ -1372,6 +1796,7 @@ await check(
               assert.equal(refreshed.window.location.search, paymentUrl.search);
               refreshed.click("#sumNext");
               await refreshed.ready();
+              await settleVenuePayment(refreshed);
               refreshed.screen("s8");
               const confirmationDraft = Object.fromEntries(
                 Object.keys(refreshed.window.sessionStorage).map((key) => [
@@ -1402,9 +1827,8 @@ await check(
           s.screen("s8");
           assert.match(s.window.location.pathname, /booking\/confirmation\/$/);
           assert.match(s.find("#recap").textContent, /TEST-INV-/);
-          assert.ok(s.find("#recap").textContent.includes("HK$ 0"));
           assert.ok(s.find("#recap").textContent.includes("HK$ 980"));
-          assert.ok(s.find("#s8 .sub").textContent.includes("HK$ 0"));
+          assert.match(s.find("#s8 .sub").textContent, locale === "en" ? /Payment received/ : /付款/);
         },
       );
     }
@@ -1432,14 +1856,16 @@ await check("Venue quote and checkout errors use API state and never produce a c
     });
     await withPage("booking", { locale, step: "time", query: venueSelectionQuery(), fetch: async (input, options) => {
       if (new URL(input).pathname.endsWith("/quote")) return { ok: true, json: async () => ({ ...fixtureQuote(Object.fromEntries(new URL(input).searchParams)), paymentAvailable: false }) };
+      if (new URL(input).pathname.endsWith("/payment")) return { ok: false, status: 503, json: async () => ({}) };
       return fixtureFetch(input, options);
     } }, async (s) => {
       s.click("#sumNext"); await s.ready(); s.screen("s6"); fillContact(s); s.click("#cWaiver");
-      assert.equal(s.find("#sumNext").disabled, false, "Deferred confirmation does not require payment availability");
+      assert.equal(s.find("#sumNext").disabled, false, "Customer details remain valid while payment configuration is unavailable");
       assert.equal(s.find("#detailsStatus").textContent, "");
       s.click("#sumNext"); await s.ready(); s.screen("s7");
-      s.click("#sumNext"); await s.ready(); s.screen("s8");
-      assert.ok(s.find("#s8 .sub").textContent.includes("HK$ 0"));
+      s.click("#sumNext"); await s.ready(); s.screen("s7");
+      assert.equal(s.redirects.length, 0);
+      assert.ok(s.find("#paymentStatus").textContent);
     });
   }
 });
@@ -1494,6 +1920,48 @@ await check("Lost checkout responses retry with the same bearer and create only 
   });
 });
 
+await check("Venue KPay stays pending until verification and returns to the website with a private fragment", async () => {
+  for (const locale of locales) await withPage("booking", { locale, step: "details", query: venueSelectionQuery() }, async s => {
+    fillContact(s); s.click("#cWaiver"); s.click("#sumNext"); await s.ready(); s.screen("s7");
+    assert.equal(s.find("#paymentNext").textContent, locale === "en" ? "Continue to Pay" : "繼續付款");
+    assert.equal(s.document.querySelector("#paymentRefresh"), null);
+    assert.equal(s.document.querySelectorAll("#s7 button").length, 1);
+    s.find("#paymentNext").click(); s.find("#paymentNext").click(); await s.ready(); s.screen("s7");
+    assert.equal(s.requests.filter(request => request.url.pathname.endsWith("/payment")).length, 1);
+    assert.equal(s.redirects.length, 1);
+    const current = new URL(s.window.location.href), entry = fixtureCheckouts.get(current.searchParams.get("checkoutId"));
+    assert.equal(entry.record.status, "Pending");
+    const query = new URLSearchParams({ mode: "venue", checkoutId: entry.record.id }).toString();
+    await withPage("booking", { locale, step: "confirmation", query, hash: `checkoutToken=${entry.token}`, blockedSessionStorage: true }, async returned => {
+      returned.screen("s7"); assert.equal(returned.window.location.hash, "");
+      assert.equal(returned.requests.some(request => request.url.pathname.endsWith("/payment")), false);
+      entry.record.status = "Paid"; entry.record.receivedCents = entry.record.totalCents; entry.record.dueCents = 0;
+      returned.window.dispatchEvent(new returned.window.Event("focus")); await returned.ready(); returned.screen("s8");
+      assert.match(returned.find("#recap").textContent, new RegExp(entry.record.reference));
+      assert.equal(returned.requests.some(request => request.url.pathname.includes("availability")), false);
+      assert.equal(returned.requests.some(request => request.url.search.includes(entry.token)), false);
+    });
+    await withPage("booking", { locale, step: "confirmation", query }, stranger => {
+      stranger.screen("s7"); assert.equal(stranger.find("#paymentNext").disabled, true);
+    });
+  });
+});
+
+await check("Class bookings remain holds through KPay and reject legacy unpaid confirmation", async () => {
+  for (const locale of locales) await withPage("booking", { locale, step: "details", query: `mode=class&lessonId=${fixtureLessons[0].id}` }, async s => {
+    s.screen("s6"); fillContact(s); s.click("#cWaiver"); s.click("#sumNext"); await s.ready(); s.screen("s7");
+    assert.equal(s.find("#paymentNext").textContent, locale === "en" ? "Continue to Pay" : "繼續付款");
+    s.click("#paymentNext"); await s.ready(); s.screen("s7"); assert.equal(s.redirects.length, 1);
+    const entry = fixtureCheckouts.get(new URL(s.window.location.href).searchParams.get("checkoutId"));
+    assert.equal(entry.record.receivedCents, 0); assert.ok(entry.record.dueCents > 0);
+    entry.record.status = "Confirmed";
+    s.window.dispatchEvent(new s.window.Event("focus")); await s.ready(); s.screen("s7");
+    entry.record.status = "Paid"; entry.record.receivedCents = entry.record.totalCents; entry.record.dueCents = 0;
+    s.window.dispatchEvent(new s.window.Event("focus")); await s.ready(); s.screen("s8");
+    assert.match(s.find("#recap").textContent, new RegExp(entry.record.reference));
+  });
+});
+
 await check("Legacy pending payments require verification and gateway fragments restore receipts without storage", async () => {
   for (const locale of locales) await withPage("booking", { locale, step: "details", query: venueSelectionQuery(), fetch: async (input, options) => {
     if (new URL(input).pathname.endsWith("/payment")) {
@@ -1507,8 +1975,8 @@ await check("Legacy pending payments require verification and gateway fragments 
     s.click("#sumNext"); await s.ready(); s.screen("s7");
     const url = new URL(s.window.location.href); const entry = fixtureCheckouts.get(url.searchParams.get("checkoutId"));
     assert.equal(entry.record.status, "Pending"); assert.ok(s.find("#paymentStatus").textContent);
-    entry.record.status = "Paid";
-    s.click("#paymentRefresh"); await s.ready(); s.screen("s8");
+    entry.record.status = "Paid"; entry.record.receivedCents = entry.record.totalCents; entry.record.dueCents = 0;
+    s.click("#paymentNext"); await s.ready(); s.screen("s8");
     await withPage("booking", { locale, step: "payment", query: url.search.slice(1), hash: `checkoutToken=${entry.token}`, blockedSessionStorage: true }, async (returned) => {
       returned.screen("s8"); assert.equal(returned.window.location.hash, "");
       assert.match(returned.find("#recap").textContent, new RegExp(entry.record.reference));
@@ -1534,7 +2002,7 @@ await check("Editing an unpaid checkout cancels its room hold; expired holds can
   await withPage("booking", { step: "details", query: venueSelectionQuery() }, async (s) => {
     fillContact(s); s.click("#cWaiver"); s.click("#sumNext"); await s.ready(); s.screen("s7");
     const entry = fixtureCheckouts.get(new URL(s.window.location.href).searchParams.get("checkoutId"));
-    entry.record.status = "Expired"; s.click("#paymentRefresh"); await s.ready(); s.screen("s7");
+    entry.record.status = "Expired"; s.window.dispatchEvent(new s.window.Event("focus")); await s.ready(); s.screen("s7");
     assert.equal(s.find("#sumNext").disabled, true); assert.ok(s.find("#paymentStatus").textContent);
     assert.equal(s.requests.some((r) => r.url.pathname.endsWith("/payment")), false);
   });
@@ -1657,12 +2125,13 @@ await check(
       "booking",
       {
         step: "time",
-        query: "mode=pt&coach=marco&size=1&date=2026-10-24&time=11:00",
+        query: "mode=pt&serviceId=396&branchId=14&date=2026-10-25&time=11:00",
       },
-      (s) => {
+      async (s) => {
         s.screen("s2");
         assert.equal(s.find('[data-t="11:00"]').classList.contains("on"), true);
         s.click("#sumNext");
+        await s.ready();
         s.screen("s6");
       },
     );

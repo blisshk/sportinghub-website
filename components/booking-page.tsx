@@ -90,6 +90,10 @@ export function BookingPage({ locale }: { locale: Locale }) {
                 aria-label={t("bk.filter_aria")}
               ></div>
               <div className="opts" id="coachList"></div>
+              <p className="meta" id="ptStatus" role="status" aria-live="polite"></p>
+              <button type="button" id="ptRetry" hidden>
+                {t("bk.venue_retry")}
+              </button>
             </section>
             <section className="screen" id="s5b">
               <h1 data-str="bk.s5b_h">{t("bk.s5b_h")}</h1>
@@ -268,6 +272,15 @@ export function BookingPage({ locale }: { locale: Locale }) {
                     </select>
                   </div>
                 </div>
+                <div id="ptGenderWrap" hidden>
+                  <label className="fl" htmlFor="fPtGender">{t("bk.f_gender")}</label>
+                  <select id="fPtGender" autoComplete="sex">
+                    <option value="">{t("bk.f_select")}</option>
+                    <option value="Female">{t("bk.g_female")}</option>
+                    <option value="Male">{t("bk.g_male")}</option>
+                    <option value="Other">{t("bk.g_other")}</option>
+                  </select>
+                </div>
                 <div id="fNotesRow" hidden={true}>
                   <label className="fl" htmlFor="fNotes" data-str="bk.f_notes">
                     {t("bk.f_notes")}
@@ -299,21 +312,9 @@ export function BookingPage({ locale }: { locale: Locale }) {
               </p>
               <div id="s7lines"></div>
               <p className="meta" id="paymentStatus" role="status" aria-live="polite"></p>
-              <button type="button" id="paymentRefresh" hidden>{t("bk.payment_check")}</button>
               <button type="button" id="paymentNext" className="btn btn-primary payment-action">
-                {t("bk.booking_confirm_button")}
+                {t("bk.pt_pay_button")}
               </button>
-              <div
-                className="cr"
-                style={{ marginTop: "18px" } as CSSProperties}
-              >
-                <b data-str="bk.cr_l">{t("bk.cr_l")}</b>
-                <span data-str="bk.cr_pay">{t("bk.cr_pay")}</span>
-              </div>
-              <div className="cr">
-                <b data-str="bk.cr_l">{t("bk.cr_l")}</b>
-                <span data-str="bk.cr_split">{t("bk.cr_split")}</span>
-              </div>
             </section>
             <section className="screen" id="s8">
               <div className="done-mark">
